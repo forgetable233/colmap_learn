@@ -27,6 +27,14 @@ struct SortEdges {
 
 bool Init(std::vector<sfm::Edge>::iterator edge,
           sfm::Points &points) {
+    /** 给一个相机的初始位置 **/
+    cv::Mat initial_R = (cv::Mat_<float>(3, 3) << 1.0f, 0.0f, 0.0f,
+            0.0f, 1.0f, 0.0f,
+            0.0f, 0.0f, 1.0f);
+
+    cv::Mat initial_t = (cv::Mat_<float>(3, 1) << 0.0f, 0.0f, 0.0f);
+
+    edge->SetInitialCameraPose(initial_R, initial_t);
     edge->Triangulation(points, sfm::kTriangulation);
 }
 
@@ -79,13 +87,6 @@ int main() {
         edge.EstimatePose();
     }
 
-    /** 给一个相机的初始位置 **/
-    cv::Mat initial_R = (cv::Mat_<float>(3, 3) << 1.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 0.0f,
-            0.0f, 0.0f, 1.0f);
-
-    cv::Mat initial_t = (cv::Mat_<float>(3, 1) << 0.0f, 0.0f, 0.0f);
-
     std::vector<sfm::Edge>::iterator begin_edge;
     for (begin_edge = edges.begin(); begin_edge != edges.end() && !begin_edge->PassGeometryTest(); begin_edge++);
 
@@ -95,7 +96,6 @@ int main() {
     }
 
     Init(begin_edge, points);
-//    points.ViewPoints();
-
+    points.ViewPoints();
     return 0;
 }

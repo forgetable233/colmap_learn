@@ -73,6 +73,9 @@ namespace sfm {
                       std::vector<cv::Point2i> &input_points,
                       std::vector<cv::Point2f> &output_points);
 
+        void CleanOutliers(std::vector<cv::Point2f> &outliers_point1, std::vector<cv::Point2f> &outliers_point2,
+                           std::vector<cv::Point2f> &inliers_point1, std::vector<cv::Point2f> &inliers_point2);
+
         /**
          * check if the match satisfy the epipolar geometry
          * @return

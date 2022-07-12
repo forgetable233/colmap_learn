@@ -22,20 +22,10 @@ namespace sfm {
             std::cerr << "The input mat can not satisfy the requirement" << std::endl;
             return;
         }
-        T_.at<float>(0, 0) = R.at<float>(0, 0);
-        T_.at<float>(0, 1) = R.at<float>(0, 1);
-        T_.at<float>(0, 2) = R.at<float>(0, 2);
-        T_.at<float>(0, 3) = _t.at<float>(0, 0);
-
-        T_.at<float>(1, 0) = R.at<float>(1, 0);
-        T_.at<float>(1, 1) = R.at<float>(1, 1);
-        T_.at<float>(1, 2) = R.at<float>(1, 2);
-        T_.at<float>(1, 3) = _t.at<float>(1, 0);
-
-        T_.at<float>(2, 0) = R.at<float>(2, 0);
-        T_.at<float>(2, 1) = R.at<float>(2, 1);
-        T_.at<float>(2, 2) = R.at<float>(2, 2);
-        T_.at<float>(2, 3) = _t.at<float>(2, 0);
+        R.col(0).copyTo(T_.col(0));
+        R.col(1).copyTo(T_.col(1));
+        R.col(2).copyTo(T_.col(2));
+        _t.col(0).copyTo(T_.col(3));
     }
 
     bool CameraModel::InitialParameters(cv::Mat &_image, int _key) {

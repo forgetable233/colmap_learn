@@ -114,25 +114,35 @@ namespace sfm {
         }
 
         if (type == kTriangulation) {
-            Eigen::Matrix<float, 3, 4> temp_pose;
-            std::cout << "The initial R is " << std::endl << R_ << std::endl << std::endl;
-            std::cout << "The initial t is " << std::endl << t_ << std::endl;
+//            std::cout << "The initial R is " << std::endl << R_ << std::endl << std::endl;
+//            std::cout << "The initial t is " << std::endl << t_ << std::endl;
+//            std::cout << t_.cols << ' ' << t_.rows << std::endl;
             // initial the pose of the second camera
             camera2_->SetCameraPose(R_, t_);
+            camera2_->T_.at<double>(0, 3) = camera2_->T_.at<double>(2, 3);
+            camera2_->T_.at<double>(1, 3) = camera2_->T_.at<double>(2, 3);
+            camera2_->T_.at<double>(2, 3) = 1.0f;
+            std::cout << "The initial camera1 pose is " << std::endl << camera1_->T_ << std::endl << std::endl;
+            std::cout << "The initial camera2 pose is " << std::endl << camera2_->T_ << std::endl << std::endl;
 
-            std::cout << "The initial camera2 pose is " << std::endl << camera2_->T_ << std::endl;
             std::vector<cv::Point2f> camera_point_1;
             std::vector<cv::Point2f> camera_point_2;
+            std::vector<cv::Point2f> camera_inliers_1;
+            std::vector<cv::Point2f> camera_inliers_2;
+
             std::vector<cv::Point3f> world_point;
 
             /** 将像素坐标转化到相机坐标系下 **/
             PixToCam(camera1_->K_, this->key_points_1_, camera_point_1);
             PixToCam(camera2_->K_, this->key_points_2_, camera_point_2);
+            CleanOutliers(camera_point_1, camera_point_2, camera_inliers_1, camera_inliers_2);
+            std::cout << "The size of the two inliers is " << camera_inliers_1.size() << " and "
+                      << camera_inliers_2.size() << std::endl;
 
             cv::Mat pst_4d;
 
-            if (this->key_points_1_.size() != this->key_points_2_.size() ||
-                this->key_points_1_.size() * this->key_points_2_.size() == 0) {
+            if (camera_inliers_1.size() != camera_inliers_2.size() ||
+                camera_inliers_1.size() * camera_inliers_2.size() == 0) {
                 std::cerr << std::endl;
                 std::cerr << "the size of the two points is not the same" << std::endl;
                 std::cerr << "The size of the input key points can not be zero" << std::endl;
@@ -141,14 +151,17 @@ namespace sfm {
             }
 
             cv::triangulatePoints(camera1_->T_, camera2_->T_,
-                                  camera_point_1, camera_point_2,
+                                  camera_inliers_1, camera_inliers_2,
                                   pst_4d);
             std::cout << "Have finished the triangulation " << std::endl;
 //            std::cout << pst_4d << std::endl;
+//            std::cout << pst_4d.cols << ' ' << pst_4d.rows << std::endl << ' ' << pst_4d.type() << std::endl;
             for (int i = 0; i < pst_4d.cols; ++i) {
+//                std::cout << pst_4d.col(i) << std::endl;
                 world_point.emplace_back(cv::Point3f{pst_4d.at<float>(0, i) / pst_4d.at<float>(3, i),
                                                      pst_4d.at<float>(1, i) / pst_4d.at<float>(3, i),
                                                      pst_4d.at<float>(2, i) / pst_4d.at<float>(3, i)});
+//                std::cout << world_point.back() << std::endl;
             }
             std::cout << "Have finished computing the position of the feature points" << std::endl;
             points.AddCloudPoint(world_point);
@@ -260,5 +273,26 @@ namespace sfm {
 
     void Edge::SetInitialCameraPose(const cv::Mat &_R, const cv::Mat &_t) {
         camera1_->SetCameraPose(_R, _t);
+    }
+
+    void Edge::CleanOutliers(std::vector<cv::Point2f> &outliers_point1, std::vector<cv::Point2f> &outliers_point2,
+                             std::vector<cv::Point2f> &inliers_point1, std::vector<cv::Point2f> &inliers_point2) {
+        for (int i = 0; i < outliers_point1.size(); ++i) {
+            cv::Mat temp_point1 = (cv::Mat_<float>(3, 1) << outliers_point1[i].x, outliers_point1[i].y, 1.0f);
+            cv::Mat temp_point2 = (cv::Mat_<float>(3, 1) << outliers_point2[i].x, outliers_point2[i].y, 1.0f);
+
+            temp_point1.convertTo(temp_point1, e_m_.type());
+            temp_point2.convertTo(temp_point2, e_m_.type());
+
+            cv::Mat check_result = temp_point2.t() * e_m_ * temp_point1;
+            if (check_result.at<float>(0, 0) <= ESSENTIAL_INLIER_THRESHOLD) {
+                inliers_point1.emplace_back(outliers_point1[i].x, outliers_point1[i].y);
+                inliers_point2.emplace_back(outliers_point2[i].x, outliers_point2[i].y);
+//                std::cout << "The first point is " << outliers_point1[i].x << ' ' << outliers_point1[i].y << std::endl;
+//                std::cout << "The second point is " << outliers_point2[i].x << ' ' << outliers_point2[i].y << std::endl
+//                          << std::endl;
+            }
+        }
+        std::cout << inliers_point1.size() << ' ' << inliers_point2.size() << std::endl;
     }
 } // sfm

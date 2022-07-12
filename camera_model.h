@@ -27,9 +27,9 @@ namespace sfm {
 
         std::vector<cv::KeyPoint> key_points_{};
 
-        cv::Mat K_{cv::Size{3, 3}, CV_16FC1, cv::Scalar{0}};
+        cv::Mat K_{cv::Size{3, 3}, CV_64F, cv::Scalar{0}};
 
-        cv::Mat T_{cv::Size{4, 3}, CV_16FC1, cv::Scalar {0}};
+        cv::Mat T_{cv::Size{4, 3}, CV_64F, cv::Scalar {0}};
 
         cv::Mat descriptors_{};
 
