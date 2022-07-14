@@ -6,7 +6,7 @@
 #include "camera_model.h"
 
 namespace sfm {
-    ImgLoader::ImgLoader(const std::string &file_path, std::vector<sfm::CameraModel> &_cameras) {
+    ImgLoader::ImgLoader(const std::string &file_path, std::vector<std::shared_ptr<CameraModel>> &_cameras) {
         int number{};
 
         std::string image_path(file_path, 0, file_path.size() - 1);
@@ -35,26 +35,27 @@ namespace sfm {
             temp_path.append(ptr->d_name);
             image = cv::imread(temp_path.c_str());
 
-            if (image.empty())  {
+            if (image.empty()) {
                 cerr << "unable to load the target image" << endl;
                 return;
             }
-
+            std::cout << image.cols << ' ' << image.rows << std::endl;
             /** 下采样 提升运行速度**/
-            cv::pyrDown(image,
-                        down_sample_2,
-                        cv::Size{image.cols / 2, image.rows / 2});
-            cv::pyrDown(down_sample_2,
-                        down_sample_4,
-                        cv::Size{down_sample_2.cols / 2, down_sample_2.rows / 2});
-            cv::pyrDown(down_sample_4,
-                        down_sample_8,
-                        cv::Size{down_sample_4.cols / 2, down_sample_4.rows / 2});
-            cv::cvtColor(down_sample_8, grey_image, cv::COLOR_BGR2GRAY);
+//            cv::pyrDown(image,
+//                        down_sample_2,
+//                        cv::Size{image.cols / 2, image.rows / 2});
+//            cv::pyrDown(down_sample_2,
+//                        down_sample_4,
+//                        cv::Size{down_sample_2.cols / 2, down_sample_2.rows / 2});
+//            cv::pyrDown(down_sample_4,
+//                        down_sample_8,
+//                        cv::Size{down_sample_4.cols / 2, down_sample_4.rows / 2});
+            cv::cvtColor(image, grey_image, cv::COLOR_BGR2GRAY);
 
 //            cv::imshow("grey image", grey_image);
 //            cv::waitKey(20);
-            _cameras.emplace_back(grey_image, number);
+
+            _cameras.emplace_back(std::make_shared<CameraModel>(grey_image, number));
             number++;
             temp_path.erase(temp_path.length() - strlen(ptr->d_name), strlen(ptr->d_name));
         }

@@ -30,13 +30,14 @@ namespace sfm {
 
         viewer->addPointCloud<pcl::PointXYZRGB>(this->cloud_, "The initial cloud");
         viewer->setBackgroundColor(1.0f, 1.0f, 1.0f);
-//        viewer->addCoordinateSystem(0.5);
+        viewer->addCoordinateSystem(1);
 //        viewer->setCameraPosition(0, 0, 0, 1, 1, 1);
         viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE,
                                                  10,
                                                  "The initial cloud");
 
 //        std::cout << this->cloud_->size() << std::endl;
+        ComputeCenter();
         while (!viewer->wasStopped()) {
             viewer->spinOnce(100);
         }
@@ -48,5 +49,25 @@ namespace sfm {
 
     Points::~Points() {
         this->cloud_->clear();
+    }
+
+    void Points::ComputeCenter() const {
+        double x = 0.0f;
+        double y = 0.0f;
+        double z = 0.0f;
+
+        for (int i = 0; i < cloud_->size(); ++i) {
+            x += cloud_->at(i).x;
+            y += cloud_->at(i).y;
+            z += cloud_->at(i).z;
+        }
+
+        x /= static_cast<double>(cloud_->size());
+        z /= static_cast<double>(cloud_->size());
+        y /= static_cast<double>(cloud_->size());
+
+        std::cout << "The x is " << x << std::endl;
+        std::cout << "The z is " << y << std::endl;
+        std::cout << "The y is " << z << std::endl;
     }
 }

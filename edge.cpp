@@ -19,21 +19,37 @@ namespace sfm {
         this->camera1_ = std::make_shared<CameraModel>(_camera1);
         this->camera2_ = std::make_shared<CameraModel>(_camera2);
 
-        if (!InitialParameters()) {
+        if (!InitialParameters(false)) {
             std::cerr << "Unable the initial the parameters!" << std::endl;
         }
     }
 
     Edge::Edge(const Edge &input_edge) {
-        camera1_ = std::move(input_edge.camera1_);
-        camera2_ = std::move(input_edge.camera2_);
+        camera1_ = input_edge.camera1_;
+        camera2_ = input_edge.camera2_;
+        this->e_m_ = std::move(input_edge.e_m_);
+        this->f_m_ = std::move(input_edge.f_m_);
+        this->h_m_ = std::move(input_edge.h_m_);
+        this->R_ = std::move(input_edge.R_);
+        this->t_ = std::move(input_edge.t_);
+        this->key_points_1_ = std::move(input_edge.key_points_1_);
+        this->key_points_2_ = std::move(input_edge.key_points_2_);
 
-        if (!InitialParameters()) {
+        if (!InitialParameters(true)) {
             std::cerr << "Unable the initial the parameters!" << std::endl;
         }
     }
 
-    bool Edge::InitialParameters() {
+    Edge::Edge(const std::shared_ptr<CameraModel> &_camera1,const std::shared_ptr<CameraModel> &_camera2) {
+        this->camera1_ = _camera1;
+        this->camera2_ = _camera2;
+
+        if (!InitialParameters(false)) {
+            std::cerr << "Unable the initial the parameters!" << std::endl;
+        }
+    }
+
+    bool Edge::InitialParameters(const bool copy) {
         if (camera1_ == nullptr || camera2_ == nullptr) {
             std::cerr << " The input camera is nullptr" << std::endl;
             return false;
@@ -59,7 +75,11 @@ namespace sfm {
             return false;
         }
         matcher->match(camera1_->descriptors_, camera2_->descriptors_, this->matches_);
-        GetPoints();
+        if (!copy) {
+            GetPoints();
+            ComputeMatrix();
+            EstimatePose();
+        }
 //        std::cout << key_points_1_.size() << ' ' << key_points_2_.size() << std::endl;
         return true;
     }
@@ -71,9 +91,17 @@ namespace sfm {
     }
 
     void Edge::ComputeMatrix() {
-        this->e_m_ = cv::findEssentialMat(this->key_points_1_, this->key_points_2_, this->camera1_->K_, cv::RANSAC);
-        this->f_m_ = cv::findFundamentalMat(this->key_points_1_, this->key_points_2_, cv::FM_RANSAC);
-        this->h_m_ = cv::findHomography(this->key_points_1_, this->key_points_2_, cv::RANSAC, 3);
+        this->e_m_ = cv::findEssentialMat(this->key_points_1_,
+                                          this->key_points_2_,
+                                          this->camera1_->K_,
+                                          cv::RANSAC);
+        this->f_m_ = cv::findFundamentalMat(this->key_points_1_,
+                                            this->key_points_2_,
+                                            cv::FM_RANSAC);
+        this->h_m_ = cv::findHomography(this->key_points_1_,
+                                        this->key_points_2_,
+                                        cv::RANSAC,
+                                        3);
     }
 
     /**
@@ -100,6 +128,9 @@ namespace sfm {
      * 计算从key1 到 key2之间的位姿变化，这里是用对极几何计算的
      */
     void Edge::EstimatePose() {
+        if (this->key_points_1_.size() != this->key_points_2_.size()) {
+            std::cerr << "The size of the two image must be the same" << std::endl;
+        }
         cv::recoverPose(this->e_m_, this->key_points_1_, this->key_points_2_, R_, t_);
 //        std::cout << this->R_ << std::endl;
 //        std::cout << this->t_ << std::endl;
@@ -119,8 +150,8 @@ namespace sfm {
 //            std::cout << t_.cols << ' ' << t_.rows << std::endl;
             // initial the pose of the second camera
             camera2_->SetCameraPose(R_, t_);
-            camera2_->T_.at<double>(0, 3) = camera2_->T_.at<double>(2, 3);
-            camera2_->T_.at<double>(1, 3) = camera2_->T_.at<double>(2, 3);
+            camera2_->T_.at<double>(0, 3) = camera2_->T_.at<double>(0, 3) / camera2_->T_.at<double>(2, 3);
+            camera2_->T_.at<double>(1, 3) = camera2_->T_.at<double>(1, 3) / camera2_->T_.at<double>(2, 3);
             camera2_->T_.at<double>(2, 3) = 1.0f;
             std::cout << "The initial camera1 pose is " << std::endl << camera1_->T_ << std::endl << std::endl;
             std::cout << "The initial camera2 pose is " << std::endl << camera2_->T_ << std::endl << std::endl;
@@ -190,7 +221,7 @@ namespace sfm {
             return false;
         }
         int number = 0;
-        if (key_points_1_.empty()) {
+        if (key_points_1_.empty() || key_points_2_.empty()) {
             std::cerr << "The size of the image can not be zero" << std::endl;
             std::cerr << key_ << std::endl;
             std::cerr << camera1_->key_ << ' ' << camera2_->key_ << std::endl << std::endl;
@@ -207,18 +238,16 @@ namespace sfm {
             temp_points_2.convertTo(temp_points_2, this->f_m_.type());
             // 使用对极几何验证,同时这里也是计算对应的外点数
             check = temp_points_2.t() * this->f_m_ * temp_points_1;
-
 //            std::cout << fabs(check.at<float>(0, 0)) << std::endl;
             if (fabs(check.at<float>(0, 0)) <= FUNDAMENTAL_INLIER_THRESHOLD) {
                 number++;
             }
         }
-        if (static_cast<float>(number) / static_cast<float>(this->key_points_1_.size()) >=
+        if (static_cast<double>(number) / static_cast<double>(this->key_points_1_.size()) >=
             FUNDAMENTAL_MATRIX_INLIERS_THRESHOLD) {
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
     int Edge::GetEInlierNumber() {
@@ -240,7 +269,7 @@ namespace sfm {
             temp_point2.at<float>(1, 0) = static_cast<float>(key_points_2_[i].y);
 
             check_result = temp_point2.t() * temp_camera2_K * e_m_ * temp_camera1_K * temp_point2;
-            if (check_result.at<float>(0, 0) <= 1.0f) {
+            if (check_result.at<double>(0, 0) <= ESSENTIAL_INLIER_THRESHOLD) {
                 number++;
             }
         }
@@ -260,7 +289,7 @@ namespace sfm {
             temp_point2.at<float>(1, 0) = static_cast<float>(key_points_2_[i].y);
 
             check_result = temp_point2.t() * f_m_ * temp_point1;
-            if (check_result.at<float>(0, 0) <= 1.0f) {
+            if (check_result.at<double>(0, 0) <= FUNDAMENTAL_INLIER_THRESHOLD) {
                 number++;
             }
         }
@@ -288,9 +317,6 @@ namespace sfm {
             if (check_result.at<float>(0, 0) <= ESSENTIAL_INLIER_THRESHOLD) {
                 inliers_point1.emplace_back(outliers_point1[i].x, outliers_point1[i].y);
                 inliers_point2.emplace_back(outliers_point2[i].x, outliers_point2[i].y);
-//                std::cout << "The first point is " << outliers_point1[i].x << ' ' << outliers_point1[i].y << std::endl;
-//                std::cout << "The second point is " << outliers_point2[i].x << ' ' << outliers_point2[i].y << std::endl
-//                          << std::endl;
             }
         }
         std::cout << inliers_point1.size() << ' ' << inliers_point2.size() << std::endl;

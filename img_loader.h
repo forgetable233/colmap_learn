@@ -27,15 +27,11 @@ namespace sfm {
 
     private:
     public:
-        int image_num_{10};
+        int image_num_{IMAGE_NUMBER};
 
         std::vector<CameraModel> image_features_;
 
-//        std::vector<sfm::ImagePair> edges_;
-
-        std::map<int, sfm::ImagePair> edges_;
-
-        explicit ImgLoader(const std::string &file_path, std::vector<sfm::CameraModel> &_cameras);
+        explicit ImgLoader(const std::string &file_path, std::vector<std::shared_ptr<CameraModel>> &_cameras);
 
         ~ImgLoader() = default;
 

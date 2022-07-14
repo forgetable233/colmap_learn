@@ -30,7 +30,7 @@ namespace sfm {
 
     class Edge {
     private:
-        bool InitialParameters();
+        bool InitialParameters(const bool copy);
 
     public:
         int key_{};
@@ -54,6 +54,8 @@ namespace sfm {
         Edge(const Edge &input_edge);
 
         Edge(std::vector<CameraModel>::iterator _camera1, std::vector<CameraModel>::iterator _camera2);
+
+        Edge(const std::shared_ptr<CameraModel> &_camera1, const std::shared_ptr<CameraModel> &_camera2);
 
         ~Edge() = default;
 

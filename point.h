@@ -17,17 +17,20 @@
 #include <pcl/io/pcd_io.h>
 
 namespace sfm {
-    class Points {
-        struct Point {
-            int key;
-            cv::Point3f position;
+    struct Point {
+        /** 保存目前这个点是从那张图片获得的 **/
+        int key;
 
-            Point(int _key, cv::Point3f &_p) : key(_key) {
-                position = _p;
-            }
-        };
+        Eigen::Vector3d position;
+
+        Point(int _key, Eigen::Vector3d &_p) : key(_key) {
+            position = _p;
+        }
+    };
+    class Points {
+
     public:
-        int key_{};
+        std::vector<Point> points_;
 
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_{};
 
@@ -38,6 +41,8 @@ namespace sfm {
         void AddCloudPoint(std::vector<cv::Point3f> &points);
 
         void ViewPoints();
+
+        void ComputeCenter() const;
     };
 }
 

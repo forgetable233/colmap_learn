@@ -8,6 +8,8 @@
 #include "camera_model.h"
 #include "edge.h"
 #include "point.h"
+#include "math_functions.h"
+#include "threholds.h"
 
 struct get_key {
     int key;
@@ -59,43 +61,75 @@ void DisplayMatchResult(std::vector<sfm::CameraModel> &cameras, std::vector<sfm:
     }
 }
 
+void CVPoint2iToVector3d(const std::vector<cv::Point2i> &point2i, std::vector<Eigen::Vector3d> &vector3d) {
+    for (auto point: point2i) {
+        vector3d.emplace_back(static_cast<double>(point.x), static_cast<double>(point.y), 1.0f);
+    }
+}
+
+void CompareEssentialMatrix(sfm::Edge &edge) {
+    edge.ComputeMatrix();
+    double variance = 0.0f;
+    Eigen::Matrix3d E;
+    std::vector<Eigen::Vector3d> points1;
+    std::vector<Eigen::Vector3d> points2;
+
+    CVPoint2iToVector3d(edge.key_points_1_, points1);
+    CVPoint2iToVector3d(edge.key_points_2_, points2);
+
+    sfm::MathFunction::ComputeEssentialMatrix(points1, points2, E);
+    std::cout << "The type of the essential matrix is " << edge.e_m_.type() << std::endl;
+    for (int i = 0; i < 3; ++i) {
+        for (int j = 0; j < 3; ++j) {
+            variance += (E(i, j) - edge.e_m_.at<double>(i, j)) *
+                        (E(i, j) - edge.e_m_.at<double>(i, j));
+        }
+    }
+    std::cout << std::endl << "The opencv result is " << edge.e_m_ << std::endl << std::endl;
+    std::cout << std::endl << "My version is " << E << std::endl << std::endl;
+
+    std::cout << "The variance of the two matrix is " << variance << std::endl;
+}
+
+/** 构造一个简单的图像树，试一试效果 **/
+void BuildSceneGraph(std::vector<std::shared_ptr<sfm::Edge>> &edges,
+                     const std::vector<std::shared_ptr<sfm::CameraModel>> &cameras,
+                     int scene_graph[IMAGE_NUMBER][IMAGE_NUMBER]) {
+    /** 目前先用简单的穷举匹配法，同时计算出一个配对效果出来 **/
+    int norm_type = cv::NORM_L2;
+
+    bool cross_check = true;
+
+    cv::Ptr<cv::BFMatcher> matcher = cv::BFMatcher::create(norm_type, cross_check);
+
+    for (int i = 0; i < IMAGE_NUMBER; ++i) {
+        for (int j = i + 1; j < IMAGE_NUMBER; ++j) {
+            sfm::Edge temp_edge{cameras[i], cameras[j]};
+            if (temp_edge.PassGeometryTest()) {
+                edges.push_back(std::make_shared<sfm::Edge>(temp_edge));
+                scene_graph[i][j] = edges.size() - 1;
+            }
+        }
+    }
+}
+
 int main() {
 //    std::string file_path_windows = "D:\\imageDataset\\gerrard-hall\\gerrard-hall\\loader\\*";
-    int pass_geometry_test_num = 0;
+    int scene_graph[IMAGE_NUMBER][IMAGE_NUMBER];
     std::string file_path_linux = "/home/dcr/codes/CorC++/colmap/testImage/gerrard-hall/images/";
 
-    std::vector<sfm::CameraModel> cameras{};
-    std::vector<sfm::Edge> edges{};
+    std::vector<std::shared_ptr<sfm::CameraModel>> cameras;
+    std::vector<std::shared_ptr<sfm::Edge>> edges;
 
     sfm::Points points{};
 
     sfm::ImgLoader loader{file_path_linux, cameras};
-    /** 目前暂时先写一个简单的配对先基本能看一看效果 **/
-    // TODO 更加完善的图像树的构建
-    for (auto camera1 = cameras.begin(); camera1 != cameras.end(); ++camera1) {
-        for (auto camera2 = camera1 + 1; camera2 != cameras.end(); ++camera2) {
-            if (camera1->key_ != camera2->key_) {
-                edges.emplace_back(camera1, camera2);
-            }
-        }
-    }
+    BuildSceneGraph(edges, cameras, scene_graph);
+    std::cout << "Have found " << edges.size() << " edges" << std::endl;
 
-    std::cout << "The size of the edges is " << edges.size() << std::endl;
-    std::sort(edges.begin(), edges.end(), sort_edges);
-    for (auto &edge: edges) {
-        edge.ComputeMatrix();
-        edge.EstimatePose();
-    }
+    edges.begin()->get()->EstimatePose();
+    edges.begin()->get()->Triangulation(points);
 
-    std::vector<sfm::Edge>::iterator begin_edge;
-    for (begin_edge = edges.begin(); begin_edge != edges.end() && !begin_edge->PassGeometryTest(); begin_edge++);
-
-    if (begin_edge == edges.end()) {
-        std::cerr << "unable to find the edge that pass the geometry test" << std::endl;
-        return -1;
-    }
-
-    Init(begin_edge, points);
     points.ViewPoints();
     return 0;
 }
