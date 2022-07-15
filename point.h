@@ -27,6 +27,10 @@ namespace sfm {
 
         CameraPlace(int _key, int _index) : key(_key), index(_index) {}
     };
+    enum SearchType {
+        kQuery = 0,
+        kTrain = 1
+    };
     struct Point {
         /** 保存目前这个点是从那张图片获得的,以及对应的索引 **/
         std::map<int, int> key_;
@@ -53,6 +57,8 @@ namespace sfm {
         ~Points();
 
         void AddCloudPoint(const std::shared_ptr<Edge> _edge, const std::vector<cv::Point3f> &points);
+
+        void GetLinkPoint(const std::shared_ptr<std::vector<cv::Point3f>>& world_point, const std::shared_ptr<Edge>& edge, enum SearchType);
 
         void ViewPoints();
 

@@ -87,6 +87,11 @@ void BuildSceneGraph(std::vector<std::shared_ptr<sfm::Edge>> &edges,
     bool cross_check = true;
 
     cv::Ptr<cv::BFMatcher> matcher = cv::BFMatcher::create(norm_type, cross_check);
+    for (int i = 0; i < IMAGE_NUMBER; ++i) {
+        for (int j = 0; j < IMAGE_NUMBER; ++j) {
+            scene_graph[i][j] = -1;
+        }
+    }
 
     for (int i = 0; i < IMAGE_NUMBER; ++i) {
         for (int j = i + 1; j < IMAGE_NUMBER; ++j) {
@@ -94,6 +99,7 @@ void BuildSceneGraph(std::vector<std::shared_ptr<sfm::Edge>> &edges,
             if (temp_edge.PassGeometryTest()) {
                 edges.push_back(std::make_shared<sfm::Edge>(temp_edge));
                 scene_graph[cameras[i]->key_][cameras[j]->key_] = edges.size() - 1;
+                scene_graph[cameras[j]->key_][cameras[i]->key_] = edges.size() - 1;
             }
         }
     }

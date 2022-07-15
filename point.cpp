@@ -14,7 +14,7 @@ namespace sfm {
     }
 
     /** 完成了三角化后新加入的点理论上不会有重复 **/
-    void Points::AddCloudPoint(const std::shared_ptr<Edge> _edge,const std::vector<cv::Point3f> &points) {
+    void Points::AddCloudPoint(const std::shared_ptr<Edge> _edge, const std::vector<cv::Point3f> &points) {
         Eigen::Vector3d temp_point;
         int i = 0;
         for (auto point: points) {
@@ -68,5 +68,51 @@ namespace sfm {
         std::cout << "The x is " << x << std::endl;
         std::cout << "The z is " << y << std::endl;
         std::cout << "The y is " << z << std::endl;
+    }
+
+    void Points::GetLinkPoint(const std::shared_ptr<std::vector<cv::Point3f>> &world_point,
+                              const std::shared_ptr<Edge> &edge,
+                              SearchType type) {
+        std::map<int, int>::iterator target;
+        int key;
+        if (type == kQuery) {
+            key = edge->camera1_->key_;
+
+            for (const auto &point: points_) {
+                target = point->key_.find(key);
+                if (target != point->key_.end()) {
+                    int i = 0;
+                    for (; i < edge->points1_index_.size(); ++i) {
+                        if (edge->points1_index_[i] == target->second) {
+                            if (edge->point1_pass_[i]) {
+                                world_point->emplace_back(point->position.x(),
+                                                          point->position.y(),
+                                                          point->position.z());
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        } else {
+            key = edge->camera2_->key_;
+
+            for (const auto &point: points_) {
+                target = point->key_.find(key);
+                if (target != point->key_.end()) {
+                    int i = 0;
+                    for (; i < edge->points2_index_.size(); ++i) {
+                        if (edge->points2_index_[i] == target->second) {
+                            if (edge->point2_pass_[i]) {
+                                world_point->emplace_back(point->position.x(),
+                                                          point->position.y(),
+                                                          point->position.z());
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     }
 }

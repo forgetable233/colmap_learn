@@ -44,7 +44,7 @@ namespace sfm {
                            const std::shared_ptr<Points> &_points,
                            const int _scene_graph[IMAGE_NUMBER][IMAGE_NUMBER]);
 
-        void Init();
+        bool Init(int index);
 
         void Triangulation(int index, TrianguleType type);
 
@@ -60,7 +60,10 @@ namespace sfm {
 
         int GetBestBeginEdge();
 
-        int SearchNextBestImage();
+        int GetNextBestEdge(const std::shared_ptr<bool[]>& used_list,
+                            const std::shared_ptr<bool[]>& joined_list,
+                            const std::shared_ptr<std::vector<int>>& index_list,
+                            int last_edge_index);
     };
 }
 
