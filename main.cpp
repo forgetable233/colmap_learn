@@ -2,14 +2,13 @@
 #include <algorithm>
 #include <string>
 
-#include <opencv2/core.hpp>
-
 #include "img_loader.h"
 #include "camera_model.h"
 #include "edge.h"
 #include "point.h"
 #include "math_functions.h"
 #include "threholds.h"
+#include "incremental_rebuild.h"
 
 struct get_key {
     int key;
@@ -26,19 +25,6 @@ struct SortEdges {
         return edge1.matches_ > edge2.matches_;
     }
 } sort_edges;
-
-bool Init(std::vector<sfm::Edge>::iterator edge,
-          sfm::Points &points) {
-    /** 给一个相机的初始位置 **/
-    cv::Mat initial_R = (cv::Mat_<float>(3, 3) << 1.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 0.0f,
-            0.0f, 0.0f, 1.0f);
-
-    cv::Mat initial_t = (cv::Mat_<float>(3, 1) << 0.0f, 0.0f, 0.0f);
-
-    edge->SetInitialCameraPose(initial_R, initial_t);
-    edge->Triangulation(points, sfm::kTriangulation);
-}
 
 void DisplayMatchResult(std::vector<sfm::CameraModel> &cameras, std::vector<sfm::Edge> &edges) {
     for (auto edge: edges) {
@@ -107,7 +93,7 @@ void BuildSceneGraph(std::vector<std::shared_ptr<sfm::Edge>> &edges,
             sfm::Edge temp_edge{cameras[i], cameras[j]};
             if (temp_edge.PassGeometryTest()) {
                 edges.push_back(std::make_shared<sfm::Edge>(temp_edge));
-                scene_graph[i][j] = edges.size() - 1;
+                scene_graph[cameras[i]->key_][cameras[j]->key_] = edges.size() - 1;
             }
         }
     }
@@ -121,15 +107,15 @@ int main() {
     std::vector<std::shared_ptr<sfm::CameraModel>> cameras;
     std::vector<std::shared_ptr<sfm::Edge>> edges;
 
-    sfm::Points points{};
+//    sfm::Points points_{};
+
+    std::shared_ptr<sfm::Points> points = std::make_shared<sfm::Points>();
 
     sfm::ImgLoader loader{file_path_linux, cameras};
     BuildSceneGraph(edges, cameras, scene_graph);
-    std::cout << "Have found " << edges.size() << " edges" << std::endl;
+    std::cout << "Have found " << edges.size() << " edges_" << std::endl;
 
-    edges.begin()->get()->EstimatePose();
-    edges.begin()->get()->Triangulation(points);
-
-    points.ViewPoints();
+    sfm::IncrementalRebuild rebuild{edges, points, scene_graph};
+    rebuild.BeginRebuild();
     return 0;
 }

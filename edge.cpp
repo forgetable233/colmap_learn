@@ -34,13 +34,17 @@ namespace sfm {
         this->t_ = std::move(input_edge.t_);
         this->key_points_1_ = std::move(input_edge.key_points_1_);
         this->key_points_2_ = std::move(input_edge.key_points_2_);
+        this->points1_index_ = std::move(input_edge.points1_index_);
+        this->points2_index_ = std::move(input_edge.points2_index_);
+        this->point1_pass_ = std::move(input_edge.point1_pass_);
+        this->point2_pass_ = std::move(input_edge.point2_pass_);
 
         if (!InitialParameters(true)) {
             std::cerr << "Unable the initial the parameters!" << std::endl;
         }
     }
 
-    Edge::Edge(const std::shared_ptr<CameraModel> &_camera1,const std::shared_ptr<CameraModel> &_camera2) {
+    Edge::Edge(const std::shared_ptr<CameraModel> &_camera1, const std::shared_ptr<CameraModel> &_camera2) {
         this->camera1_ = _camera1;
         this->camera2_ = _camera2;
 
@@ -114,6 +118,9 @@ namespace sfm {
         for (auto match: this->matches_) {
             this->key_points_1_.push_back(camera1->key_points_[match.queryIdx].pt);
             this->key_points_2_.push_back(camera2->key_points_[match.trainIdx].pt);
+            /** 保存对应的索引 **/
+            this->points1_index_.push_back(match.queryIdx);
+            this->points2_index_.push_back(match.trainIdx);
         }
     }
 
@@ -121,6 +128,9 @@ namespace sfm {
         for (auto match: this->matches_) {
             this->key_points_1_.push_back(this->camera1_->key_points_[match.queryIdx].pt);
             this->key_points_2_.push_back(this->camera2_->key_points_[match.trainIdx].pt);
+            /** 保存对应的索引 **/
+            this->points1_index_.push_back(match.queryIdx);
+            this->points2_index_.push_back(match.trainIdx);
         }
     }
 
@@ -131,88 +141,10 @@ namespace sfm {
         if (this->key_points_1_.size() != this->key_points_2_.size()) {
             std::cerr << "The size of the two image must be the same" << std::endl;
         }
+        if (this->key_points_1_.size() * this->key_points_2_.size() == 0) {
+            std::cerr << "The size of the input key points_ can not be zero" << std::endl;
+        }
         cv::recoverPose(this->e_m_, this->key_points_1_, this->key_points_2_, R_, t_);
-//        std::cout << this->R_ << std::endl;
-//        std::cout << this->t_ << std::endl;
-    }
-
-    void
-    Edge::Triangulation(Points &points,
-                        TrianguleType type) {
-        if (camera1_ == nullptr || camera2_ == nullptr || camera1_ == camera2_) {
-            std::cerr << "Fail to find the target camera" << std::endl;
-            return;
-        }
-
-        if (type == kTriangulation) {
-//            std::cout << "The initial R is " << std::endl << R_ << std::endl << std::endl;
-//            std::cout << "The initial t is " << std::endl << t_ << std::endl;
-//            std::cout << t_.cols << ' ' << t_.rows << std::endl;
-            // initial the pose of the second camera
-            camera2_->SetCameraPose(R_, t_);
-            camera2_->T_.at<double>(0, 3) = camera2_->T_.at<double>(0, 3) / camera2_->T_.at<double>(2, 3);
-            camera2_->T_.at<double>(1, 3) = camera2_->T_.at<double>(1, 3) / camera2_->T_.at<double>(2, 3);
-            camera2_->T_.at<double>(2, 3) = 1.0f;
-            std::cout << "The initial camera1 pose is " << std::endl << camera1_->T_ << std::endl << std::endl;
-            std::cout << "The initial camera2 pose is " << std::endl << camera2_->T_ << std::endl << std::endl;
-
-            std::vector<cv::Point2f> camera_point_1;
-            std::vector<cv::Point2f> camera_point_2;
-            std::vector<cv::Point2f> camera_inliers_1;
-            std::vector<cv::Point2f> camera_inliers_2;
-
-            std::vector<cv::Point3f> world_point;
-
-            /** 将像素坐标转化到相机坐标系下 **/
-            PixToCam(camera1_->K_, this->key_points_1_, camera_point_1);
-            PixToCam(camera2_->K_, this->key_points_2_, camera_point_2);
-            CleanOutliers(camera_point_1, camera_point_2, camera_inliers_1, camera_inliers_2);
-            std::cout << "The size of the two inliers is " << camera_inliers_1.size() << " and "
-                      << camera_inliers_2.size() << std::endl;
-
-            cv::Mat pst_4d;
-
-            if (camera_inliers_1.size() != camera_inliers_2.size() ||
-                camera_inliers_1.size() * camera_inliers_2.size() == 0) {
-                std::cerr << std::endl;
-                std::cerr << "the size of the two points is not the same" << std::endl;
-                std::cerr << "The size of the input key points can not be zero" << std::endl;
-                std::cerr << this->key_points_1_.size() << ' ' << this->key_points_2_.size() << std::endl;
-                return;
-            }
-
-            cv::triangulatePoints(camera1_->T_, camera2_->T_,
-                                  camera_inliers_1, camera_inliers_2,
-                                  pst_4d);
-            std::cout << "Have finished the triangulation " << std::endl;
-//            std::cout << pst_4d << std::endl;
-//            std::cout << pst_4d.cols << ' ' << pst_4d.rows << std::endl << ' ' << pst_4d.type() << std::endl;
-            for (int i = 0; i < pst_4d.cols; ++i) {
-//                std::cout << pst_4d.col(i) << std::endl;
-                world_point.emplace_back(cv::Point3f{pst_4d.at<float>(0, i) / pst_4d.at<float>(3, i),
-                                                     pst_4d.at<float>(1, i) / pst_4d.at<float>(3, i),
-                                                     pst_4d.at<float>(2, i) / pst_4d.at<float>(3, i)});
-//                std::cout << world_point.back() << std::endl;
-            }
-            std::cout << "Have finished computing the position of the feature points" << std::endl;
-            points.AddCloudPoint(world_point);
-        }
-    }
-
-    void Edge::PixToCam(cv::Mat &K, std::vector<cv::Point2i> &input_points, std::vector<cv::Point2f> &output_points) {
-        if (K.cols != 3 || K.rows != 3) {
-            std::cerr << "the col or the row of the input K isn't equal to 3" << std::endl;
-            return;
-        }
-        cv::Mat inverted_K;
-        cv::invert(K, inverted_K);
-
-        for (auto point: input_points) {
-            cv::Mat temp_input_point = (cv::Mat_<float>(3, 1) << point.x, point.y, 1.0f);
-            cv::Mat temp_output_point = inverted_K * temp_input_point;
-            output_points.emplace_back(temp_output_point.at<float>(0, 0),
-                                       temp_output_point.at<float>(1, 0));
-        }
     }
 
     bool Edge::PassGeometryTest() {
@@ -221,29 +153,41 @@ namespace sfm {
             return false;
         }
         int number = 0;
+        int size = this->key_points_1_.size();
         if (key_points_1_.empty() || key_points_2_.empty()) {
             std::cerr << "The size of the image can not be zero" << std::endl;
             std::cerr << key_ << std::endl;
             std::cerr << camera1_->key_ << ' ' << camera2_->key_ << std::endl << std::endl;
             return false;
         }
-        for (int i = 0; i < this->key_points_1_.size(); ++i) {
-            cv::Mat temp_points_1 = (cv::Mat_<float>(3, 1) << static_cast<float>(key_points_1_[i].x),
-                    static_cast<float>(key_points_1_[i].y), 1.0f);
-            cv::Mat temp_points_2 = (cv::Mat_<float>(3, 1) << static_cast<float>(key_points_2_[i].x),
-                    static_cast<float>(key_points_2_[i].y), 1.0f);
+        /** 现在直接把所有的外点删了，应该没啥问题 **/
+        auto point1 = key_points_1_.begin();
+        auto point2 = key_points_2_.begin();
+
+        for (; point1 != key_points_1_.end() && point2 != key_points_2_.end();
+               ++point1, ++point2) {
+            cv::Mat temp_point_1 = (cv::Mat_<float>(3, 1) << static_cast<float>(point1->x),
+                    static_cast<float>(point1->y), 1.0f);
+            cv::Mat temp_point_2 = (cv::Mat_<float>(3, 1) << static_cast<float>(point2->x),
+                    static_cast<float>(point2->y), 1.0f);
             cv::Mat check;
 
-            temp_points_1.convertTo(temp_points_1, this->f_m_.type());
-            temp_points_2.convertTo(temp_points_2, this->f_m_.type());
-            // 使用对极几何验证,同时这里也是计算对应的外点数
-            check = temp_points_2.t() * this->f_m_ * temp_points_1;
-//            std::cout << fabs(check.at<float>(0, 0)) << std::endl;
+            temp_point_1.convertTo(temp_point_1, this->f_m_.type());
+            temp_point_2.convertTo(temp_point_2, this->f_m_.type());
+            /** 使用对极几何验证,同时这里也是计算对应的外点数 **/
+            check = temp_point_2.t() * this->f_m_ * temp_point_1;
             if (fabs(check.at<float>(0, 0)) <= FUNDAMENTAL_INLIER_THRESHOLD) {
+                point1_pass_.push_back(true);
+                point2_pass_.push_back(true);
                 number++;
+            } else {
+                point1_pass_.push_back(false);
+                point2_pass_.push_back(false);
+                continue;
             }
         }
-        if (static_cast<double>(number) / static_cast<double>(this->key_points_1_.size()) >=
+        this->f_m_inliers_ = number;
+        if (static_cast<double>(number) / static_cast<double>(size) >=
             FUNDAMENTAL_MATRIX_INLIERS_THRESHOLD) {
             return true;
         }

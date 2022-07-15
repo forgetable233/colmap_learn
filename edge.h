@@ -18,27 +18,30 @@
 #include <eigen3/Eigen/Core>
 
 #include "camera_model.h"
-#include "point.h"
 #include "threholds.h"
 
 namespace sfm {
-
-    enum TrianguleType {
-        kTriangulation = 0,
-        kNormal = 1,
-    };
 
     class Edge {
     private:
         bool InitialParameters(const bool copy);
 
     public:
-        int key_{};
+        int key_ = 0;
+        int e_m_inliers_ = 0;
+        int f_m_inliers_ = 0;
+        int h_m_inliers_ = 0;
 
         std::vector<cv::DMatch> matches_;
 
-        std::vector<cv::Point2i> key_points_1_{};
-        std::vector<cv::Point2i> key_points_2_{};
+        std::vector<cv::Point2i> key_points_1_;
+        std::vector<cv::Point2i> key_points_2_;
+
+        std::vector<int> points1_index_;
+        std::vector<int> points2_index_;
+
+        std::vector<bool> point1_pass_;
+        std::vector<bool> point2_pass_;
 
         cv::Mat e_m_;
         cv::Mat f_m_;
@@ -67,13 +70,6 @@ namespace sfm {
                        std::vector<sfm::CameraModel>::iterator camera2);
 
         void GetPoints();
-
-        void Triangulation(sfm::Points &points,
-                           TrianguleType type = kNormal);
-
-        void PixToCam(cv::Mat &K,
-                      std::vector<cv::Point2i> &input_points,
-                      std::vector<cv::Point2f> &output_points);
 
         void CleanOutliers(std::vector<cv::Point2f> &outliers_point1, std::vector<cv::Point2f> &outliers_point2,
                            std::vector<cv::Point2f> &inliers_point1, std::vector<cv::Point2f> &inliers_point2);

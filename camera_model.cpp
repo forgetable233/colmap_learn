@@ -52,7 +52,7 @@ namespace sfm {
         sift->detect(this->image_, this->key_points_);
         sift->compute(this->image_, this->key_points_, this->descriptors_);
         if (this->key_points_.size() == 0) {
-            std::cout << "this image can not find enough key points" << std::endl;
+            std::cout << "this image can not find enough key points_" << std::endl;
             std::cout << this->key_ << std::endl;
         }
         cv::Mat temp = (cv::Mat_<float>(3, 3) << this->image_.cols / 2, 0.0f, this->image_.cols / 2,

@@ -16,21 +16,35 @@
 #include <pcl/io/io.h>
 #include <pcl/io/pcd_io.h>
 
+#include "edge.h"
+#include "camera_model.h"
+
 namespace sfm {
-    struct Point {
-        /** 保存目前这个点是从那张图片获得的 **/
+    struct CameraPlace {
         int key;
+
+        int index;
+
+        CameraPlace(int _key, int _index) : key(_key), index(_index) {}
+    };
+    struct Point {
+        /** 保存目前这个点是从那张图片获得的,以及对应的索引 **/
+        std::map<int, int> key_;
 
         Eigen::Vector3d position;
 
-        Point(int _key, Eigen::Vector3d &_p) : key(_key) {
-            position = _p;
+        explicit Point(Eigen::Vector3d &_p) {
+            position = std::move(_p);
+        }
+
+        void AddPair(int camera, int index) {
+            key_.insert(std::pair<int, int>(camera, index));
         }
     };
     class Points {
 
     public:
-        std::vector<Point> points_;
+        std::vector<std::shared_ptr<Point>> points_;
 
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_{};
 
@@ -38,7 +52,7 @@ namespace sfm {
 
         ~Points();
 
-        void AddCloudPoint(std::vector<cv::Point3f> &points);
+        void AddCloudPoint(const std::shared_ptr<Edge> _edge, const std::vector<cv::Point3f> &points);
 
         void ViewPoints();
 

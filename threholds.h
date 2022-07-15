@@ -17,33 +17,7 @@
 #define IMAGE_NUMBER 10
 
 namespace sfm {
-    struct ImagePair {
-        std::vector<cv::DMatch> matches{};
 
-        cv::Mat_<double> essential_matrix{3, 3, 0};
-        cv::Mat_<double> fundamental_matrix{3, 3, 0};
-        cv::Mat_<double> R{3, 3, 0};
-
-        cv::Mat_<double> t{3, 1, 0};
-
-        ImagePair(std::vector<cv::DMatch> _matches,
-                  const cv::Mat_<double>& e_m,
-                  const cv::Mat_<double>& f_m,
-                  cv::Mat_<double> _R,
-                  cv::Mat_<double> _t) {
-            matches.assign(_matches.begin(), _matches.end());
-
-            e_m.copyTo(essential_matrix);
-            f_m.copyTo(fundamental_matrix);
-            _R.copyTo(R);
-            _t.copyTo(t);
-        }
-    };
-
-    struct FeaturePoint {
-        int key;
-
-    };
 }
 
 
