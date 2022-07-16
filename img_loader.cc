@@ -31,9 +31,11 @@ namespace sfm {
         }
         temp_path.assign(file_path);
         while ((ptr = readdir(pDIR)) != nullptr && number < image_num_) {
-//            std::cout << ptr->d_name << std::endl;
+            if (strcmp(ptr->d_name, "..") == 0 || strcmp(ptr->d_name, ".") == 0) {
+                continue;
+            }
             temp_path.append(ptr->d_name);
-            image = cv::imread(temp_path.c_str());
+            image = cv::imread(temp_path);
 
             if (image.empty()) {
                 cerr << "unable to load the target image" << endl;

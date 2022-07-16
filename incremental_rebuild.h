@@ -54,6 +54,8 @@ namespace sfm {
 
         void BeginRebuild();
 
+        void ShowMatchResult(int begin_index);
+
         void CleanOutliers(int index,
                            std::vector<cv::Point2f> &clean_points_1,
                            std::vector<cv::Point2f> &clean_points_2);

@@ -8,7 +8,7 @@ namespace sfm {
 
     IncrementalRebuild::IncrementalRebuild(const std::vector<std::shared_ptr<Edge>> &_edges,
                                            const std::shared_ptr<Points> &_points,
-                                           const int (*_scene_graph)[10]) {
+                                           const int (*_scene_graph)[IMAGE_NUMBER]) {
         this->edges_.resize(_edges.size());
         std::copy(_edges.begin(), _edges.end(), this->edges_.begin());
         this->points_ = _points;
@@ -34,32 +34,35 @@ namespace sfm {
         std::shared_ptr<CameraModel> camera1;
         std::shared_ptr<CameraModel> camera2;
 
+        std::shared_ptr<std::vector<cv::Point3f>> world_point = std::make_shared<std::vector<cv::Point3f>>();
+
         used_list.get()[begin_index] = true;
         joined_list.get()[begin_index] = true;
         if (Init(begin_index)) {
             std::cout << "Have finished the initialize" << std::endl;
+//            ShowMatchResult(begin_index);
+            points_->ViewPoints();
         } else {
             std::cerr << "Error occurred unable to initialize" << std::endl;
         }
-        while (joined_number < edges_.size()) {
-            // TODO 场景图的增强，下一帧图像的寻找
-            // TODO 测试效果
-            next_best_index = GetNextBestEdge(used_list, joined_list, index_list, next_best_index);
-            joined_number++;
-            /** 建立下一帧和现有点云的链接 **/
-            camera1 = this->edges_[next_best_index]->camera1_;
-            camera2 = this->edges_[next_best_index]->camera2_;
-
-            if (camera1 == this->edges_[last_pair]->camera1_ || camera1 == this->edges_[last_pair]->camera2_) {
-                /** 此时应用现有的进行查找 **/
-                std::shared_ptr<std::vector<cv::Point3f>> world_point;
-                this->points_->GetLinkPoint(world_point, edges_[next_best_index], kQuery);
-
-            } else {
-                std::shared_ptr<std::vector<cv::Point3f>> world_point;
-                this->points_->GetLinkPoint(world_point, edges_[next_best_index], kQuery);
-            }
-        }
+//        while (joined_number < edges_.size()) {
+//            // TODO 场景图的增强，下一帧图像的寻找
+//            // TODO 测试效果
+//            next_best_index = GetNextBestEdge(used_list, joined_list, index_list, next_best_index);
+//            joined_number++;
+//            /** 建立下一帧和现有点云的链接 **/
+//            camera1 = this->edges_[next_best_index]->camera1_;
+//            camera2 = this->edges_[next_best_index]->camera2_;
+//
+//            if (camera1 == this->edges_[last_pair]->camera1_ || camera1 == this->edges_[last_pair]->camera2_) {
+//                /** 此时应用现有的进行查找 **/
+//                this->points_->GetLinkPoint(world_point, edges_[next_best_index], kQuery);
+//
+//            } else {
+//                this->points_->GetLinkPoint(world_point, edges_[next_best_index], kTrain);
+//            }
+//            world_point->clear();
+//        }
     }
 
     int
@@ -149,13 +152,12 @@ namespace sfm {
         if (type == kInitial) {
             // initial the pose of the second camera
             camera2->SetCameraPose(edge->R_, edge->t_);
+            camera1->T_.at<double>(0, 0) = 1.0f;
+            camera1->T_.at<double>(1, 1) = 1.0f;
+            camera1->T_.at<double>(2, 2) = 1.0f;
             camera2->T_.at<double>(0, 3) = camera2->T_.at<double>(0, 3) / camera2->T_.at<double>(2, 3);
-            camera2->T_.at<double>(1, 3) =
-                    camera2->T_.at<double>(1, 3) / camera2->T_.at<double>(2, 3);
+            camera2->T_.at<double>(1, 3) = camera2->T_.at<double>(1, 3) / camera2->T_.at<double>(2, 3);
             camera2->T_.at<double>(2, 3) = 1.0f;
-//            std::cout << "The initial camera1 pose is " << std::endl << camera2->T_ << std::endl << std::endl;
-//            std::cout << "The initial camera2 pose is " << std::endl << camera2->T_ << std::endl << std::endl;
-
             /** 进行清外点以及向相机坐标系的转变 **/
             std::vector<cv::Point2f> clean_point_1;
             std::vector<cv::Point2f> clean_point_2;
@@ -167,12 +169,12 @@ namespace sfm {
             std::vector<cv::Point3f> world_point;
 
             /** 将像素坐标转化到相机坐标系下 **/
-            PixToCam(camera2->K_, clean_point_1, camera_point_1);
+            PixToCam(camera1->K_, clean_point_1, camera_point_1);
             PixToCam(camera2->K_, clean_point_2, camera_point_2);
 
             cv::Mat pst_4d;
 
-            cv::triangulatePoints(camera2->T_, camera2->T_,
+            cv::triangulatePoints(camera1->T_, camera2->T_,
                                   camera_point_1, camera_point_2,
                                   pst_4d);
             std::cout << "Have finished the triangulation " << std::endl;
@@ -202,5 +204,24 @@ namespace sfm {
                 clean_points_2.push_back(temp_edge->key_points_2_[i]);
             }
         }
+    }
+
+    void IncrementalRebuild::ShowMatchResult(int begin_index) {
+        std::vector<cv::DMatch> clean_match;
+        cv::Mat match_image;
+        auto temp_edge = this->edges_[begin_index];
+        for (int i = 0; i < temp_edge->key_points_1_.size() && i < temp_edge->key_points_2_.size(); ++i) {
+            if (temp_edge->point1_pass_[i] && temp_edge->point2_pass_[i]) {
+                clean_match.push_back(temp_edge->matches_[i]);
+            }
+        }
+        std::cout << clean_match.size() << ' ' << temp_edge->key_points_1_.size() << std::endl;
+        cv::drawMatches(edges_[begin_index]->camera1_->image_, edges_[begin_index]->camera1_->key_points_,
+                        edges_[begin_index]->camera2_->image_, edges_[begin_index]->camera2_->key_points_,
+                        clean_match, match_image);
+
+        cv::imshow("The begin pair", match_image);
+//        cv::imshow("The camera1", edges_[begin_index]->camera2_->image_);
+        cv::waitKey(0);
     }
 }

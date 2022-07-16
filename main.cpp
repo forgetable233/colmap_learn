@@ -108,7 +108,7 @@ void BuildSceneGraph(std::vector<std::shared_ptr<sfm::Edge>> &edges,
 int main() {
 //    std::string file_path_windows = "D:\\imageDataset\\gerrard-hall\\gerrard-hall\\loader\\*";
     int scene_graph[IMAGE_NUMBER][IMAGE_NUMBER];
-    std::string file_path_linux = "/home/dcr/codes/CorC++/colmap/testImage/gerrard-hall/images/";
+    std::string file_path_linux = "/home/dcr/codes/CorC++/colmap/testImage/gerrard-hall/newimage/";
 
     std::vector<std::shared_ptr<sfm::CameraModel>> cameras;
     std::vector<std::shared_ptr<sfm::Edge>> edges;

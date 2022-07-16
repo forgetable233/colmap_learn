@@ -245,7 +245,7 @@ namespace sfm {
     }
 
     void Edge::SetInitialCameraPose(const cv::Mat &_R, const cv::Mat &_t) {
-        camera1_->SetCameraPose(_R, _t);
+        camera2_->SetCameraPose(_R, _t);
     }
 
     void Edge::CleanOutliers(std::vector<cv::Point2f> &outliers_point1, std::vector<cv::Point2f> &outliers_point2,
