@@ -12,6 +12,7 @@
 #include <random>
 #include <ctime>
 #include <cstdlib>
+#include <memory>
 
 #include <Eigen/Core>
 #include <Eigen/Dense>
@@ -25,29 +26,41 @@
 #include "threholds.h"
 
 namespace sfm {
-class MathFunction {
-public:
-    MathFunction() = default;
+    class MathFunction {
+    public:
+        MathFunction() = default;
 
-    ~MathFunction() = default;
+        ~MathFunction() = default;
 
-    static void EpipolarGeometry();
+        static void EpipolarGeometry();
 
-    static void ComputeEssentialMatrix(std::vector<Eigen::Vector3d> &key_points_1,
-                                std::vector<Eigen::Vector3d> &key_points_2,
-                                Eigen::Matrix3d &E);
+        static void ComputeEssentialMatrix(std::vector<Eigen::Vector3d> &key_points_1,
+                                           std::vector<Eigen::Vector3d> &key_points_2,
+                                           Eigen::Matrix3d &E);
 
-    /**
-     * 用于计算对应的内点的数量
-     * @param key_points_1
-     * @param key_points_2
-     * @param E
-     * @return
-     */
-    static int GetInliersNumber(std::vector<Eigen::Vector3d> &key_points_1,
-                         std::vector<Eigen::Vector3d> &key_points_2,
-                         Eigen::Matrix3d &E);
-};
+        static void ComputeFundamentalMatrix(std::vector<Eigen::Vector2d> &points1,
+                                             std::vector<Eigen::Vector2d> &points2,
+                                             Eigen::Matrix3d &F);
+
+        static void EightComputeFundamentalMatrix(std::vector<Eigen::Vector2d> &points1,
+                                                  std::vector<Eigen::Vector2d> &points2,
+                                                  Eigen::Matrix3d &F);
+
+        static void CenterAndNormalizePoints(std::vector<Eigen::Vector2d> &points,
+                                             std::vector<Eigen::Vector2d> &points_normed,
+                                             Eigen::Matrix3d &trans_m);
+
+        /**
+         * 用于计算对应的内点的数量
+         * @param key_points_1
+         * @param key_points_2
+         * @param E
+         * @return
+         */
+        static int GetInliersNumber(std::vector<Eigen::Vector3d> &key_points_1,
+                                    std::vector<Eigen::Vector3d> &key_points_2,
+                                    Eigen::Matrix3d &E);
+    };
 
 };
 

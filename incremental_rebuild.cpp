@@ -152,6 +152,7 @@ namespace sfm {
         if (type == kInitial) {
             // initial the pose of the second camera
             camera2->SetCameraPose(edge->R_, edge->t_);
+            /** 坐标系没有发生变化 **/
             camera1->T_.at<double>(0, 0) = 1.0f;
             camera1->T_.at<double>(1, 1) = 1.0f;
             camera1->T_.at<double>(2, 2) = 1.0f;
@@ -179,12 +180,14 @@ namespace sfm {
                                   pst_4d);
             std::cout << "Have finished the triangulation " << std::endl;
             for (int i = 0; i < pst_4d.cols; ++i) {
-                world_point.emplace_back(cv::Point3f{pst_4d.at<float>(0, i) / pst_4d.at<float>(3, i),
-                                                     pst_4d.at<float>(1, i) / pst_4d.at<float>(3, i),
-                                                     pst_4d.at<float>(2, i) / pst_4d.at<float>(3, i)});
+                if (pst_4d.at<float>(2, i) / pst_4d.at<float>(3, i) > 0) {
+                    world_point.emplace_back(cv::Point3f{pst_4d.at<float>(0, i) / pst_4d.at<float>(3, i),
+                                                         pst_4d.at<float>(1, i) / pst_4d.at<float>(3, i),
+                                                         pst_4d.at<float>(2, i) / pst_4d.at<float>(3, i)});
+                }
+                Eigen::Vector4d w_point;
+                w_point << world_point.back().x, world_point.back().y, world_point.back().z, 1.0f;
             }
-            std::cout << "Have finished computing the position of the feature points_" << std::endl;
-//            std::cout << "The size of the world point is " << world_point.size() << std::endl;
 
             /** 针对完成三角化的点进行索引的构建 **/
             points_->AddCloudPoint(edge, world_point);
@@ -195,9 +198,6 @@ namespace sfm {
                                            std::vector<cv::Point2f> &clean_points_1,
                                            std::vector<cv::Point2f> &clean_points_2) {
         auto temp_edge = this->edges_[index];
-//        std::cout << temp_edge->key_points_1_.size() << ' ' << temp_edge->key_points_2_.size() << ' ' << std::endl;
-//        std::cout << temp_edge->point1_pass_.size() << ' ' << temp_edge->point2_pass_.size() << ' ' << std::endl;
-//        std::cout << temp_edge->points1_index_.size() << ' ' << temp_edge->points2_index_.size() << ' ' << std::endl;
         for (int i = 0; i < temp_edge->key_points_1_.size(); ++i) {
             if (temp_edge->point1_pass_[i] && temp_edge->point2_pass_[i]) {
                 clean_points_1.push_back(temp_edge->key_points_1_[i]);

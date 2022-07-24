@@ -53,30 +53,6 @@ void CVPoint2iToVector3d(const std::vector<cv::Point2i> &point2i, std::vector<Ei
     }
 }
 
-void CompareEssentialMatrix(sfm::Edge &edge) {
-    edge.ComputeMatrix();
-    double variance = 0.0f;
-    Eigen::Matrix3d E;
-    std::vector<Eigen::Vector3d> points1;
-    std::vector<Eigen::Vector3d> points2;
-
-    CVPoint2iToVector3d(edge.key_points_1_, points1);
-    CVPoint2iToVector3d(edge.key_points_2_, points2);
-
-    sfm::MathFunction::ComputeEssentialMatrix(points1, points2, E);
-    std::cout << "The type of the essential matrix is " << edge.e_m_.type() << std::endl;
-    for (int i = 0; i < 3; ++i) {
-        for (int j = 0; j < 3; ++j) {
-            variance += (E(i, j) - edge.e_m_.at<double>(i, j)) *
-                        (E(i, j) - edge.e_m_.at<double>(i, j));
-        }
-    }
-    std::cout << std::endl << "The opencv result is " << edge.e_m_ << std::endl << std::endl;
-    std::cout << std::endl << "My version is " << E << std::endl << std::endl;
-
-    std::cout << "The variance of the two matrix is " << variance << std::endl;
-}
-
 /** 构造一个简单的图像树，试一试效果 **/
 void BuildSceneGraph(std::vector<std::shared_ptr<sfm::Edge>> &edges,
                      const std::vector<std::shared_ptr<sfm::CameraModel>> &cameras,
@@ -105,6 +81,55 @@ void BuildSceneGraph(std::vector<std::shared_ptr<sfm::Edge>> &edges,
     }
 }
 
+double ComputeResidual(std::vector<Eigen::Vector2d> &points1,
+                       std::vector<Eigen::Vector2d> &points2,
+                       Eigen::Matrix3d &F) {
+    int residual = 0;
+    if (points1.size() != points2.size()) {
+        std::cerr << "The size is inequal" << std::endl;
+    }
+    const int size = points2.size();
+    for (int i = 0; i < size; i++) {
+        Eigen::Vector3d temp_point1 = points1[i].homogeneous();
+        Eigen::Vector3d temp_point2 = points2[i].homogeneous();
+        double local_residual = temp_point2.transpose() * F * temp_point1;
+        residual += local_residual * local_residual;
+    }
+    return residual;
+}
+
+void CheckFMatrix(std::vector<std::shared_ptr<sfm::CameraModel>> &cameras) {
+    auto &camera1 = cameras[0];
+    auto &camera2 = cameras[1];
+    cv::Ptr<cv::BFMatcher> matcher = cv::BFMatcher::create();
+    std::vector<cv::DMatch> matches;
+    std::vector<cv::Point2i> points1;
+    std::vector<cv::Point2i> points2;
+    std::vector<Eigen::Vector2d> e_points1;
+    std::vector<Eigen::Vector2d> e_points2;
+    Eigen::Matrix3d F_my;
+
+    matcher->match(camera1->descriptors_, camera2->descriptors_, matches);
+    for (const auto &match: matches) {
+        points1.emplace_back(camera1->key_points_[match.queryIdx].pt);
+        points2.emplace_back(camera2->key_points_[match.trainIdx].pt);
+        e_points1.emplace_back(camera1->key_points_[match.queryIdx].pt.x, camera1->key_points_[match.queryIdx].pt.y);
+        e_points2.emplace_back(camera2->key_points_[match.trainIdx].pt.x, camera2->key_points_[match.trainIdx].pt.y);
+    }
+    std::cout << "Begin to compute the Fundamental matrix" << std::endl;
+    cv::Mat F = cv::findFundamentalMat(points1, points2, cv::FM_RANSAC);
+    sfm::MathFunction::ComputeFundamentalMatrix(e_points1, e_points2, F_my);
+    std::cout << F_my << std::endl << std::endl;
+    std::cout << F << std::endl << std::endl;
+    Eigen::Matrix3d F_cv;
+    F_cv << F.at<double>(0, 0), F.at<double>(0, 1), F.at<double>(0, 2),
+            F.at<double>(1, 0), F.at<double>(1, 1), F.at<double>(1, 2),
+            F.at<double>(2, 0), F.at<double>(2, 1), F.at<double>(2, 2);
+    double residual1 = ComputeResidual(e_points1, e_points2, F_my);
+    double residual2 = ComputeResidual(e_points1, e_points2, F_cv);
+    std::cout << residual1 << ' ' << residual2 << std::endl;
+}
+
 int main() {
 //    std::string file_path_windows = "D:\\imageDataset\\gerrard-hall\\gerrard-hall\\loader\\*";
     int scene_graph[IMAGE_NUMBER][IMAGE_NUMBER];
@@ -113,7 +138,7 @@ int main() {
     std::vector<std::shared_ptr<sfm::CameraModel>> cameras;
     std::vector<std::shared_ptr<sfm::Edge>> edges;
 
-//    sfm::Points points_{};
+    sfm::Points points_{};
 
     std::shared_ptr<sfm::Points> points = std::make_shared<sfm::Points>();
 
