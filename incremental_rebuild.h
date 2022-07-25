@@ -19,7 +19,7 @@
 #include "camera_model.h"
 #include "edge.h"
 #include "point2d.h"
-#include "threholds.h"
+#include "thresholds.h"
 
 namespace sfm {
     enum TrianguleType {

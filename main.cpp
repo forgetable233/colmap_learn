@@ -7,9 +7,9 @@
 #include "edge.h"
 #include "point2d.h"
 #include "math_functions.h"
-#include "threholds.h"
+#include "thresholds.h"
 #include "incremental_rebuild.h"
-#include "corresponse_graph.h"
+#include "correspondence_graph.h"
 
 struct get_key {
     int key;
@@ -112,16 +112,14 @@ void CheckFMatrix(std::vector<std::shared_ptr<sfm::CameraModel>> &cameras) {
 
 int main() {
     int scene_graph[IMAGE_NUMBER][IMAGE_NUMBER];
-    std::string file_path_linux = "/home/dcr/codes/CorC++/colmap/testImage/gerrard-hall/images/";
+    std::string file_path_linux = "/home/dcr/codes/CorC++/colmap/testImage/gerrard-hall/newimage/";
     std::vector<std::shared_ptr<sfm::CameraModel>> cameras;
-    std::vector<std::shared_ptr<sfm::Edge>> edges;
-    std::shared_ptr<sfm::Point2d> points = std::make_shared<sfm::Point2d>();
 
     sfm::ImgLoader loader{file_path_linux, cameras};
-    std::cout << "Have found " << edges.size() << " edges_" << std::endl;
 
     sfm::CorrespondenceGraph correspondence_graph(cameras);
-    sfm::IncrementalRebuild rebuild{edges, points, scene_graph};
-    rebuild.BeginRebuild();
+    std::cout << "Have Finished the correspondence graph build" << std::endl;
+//    sfm::IncrementalRebuild rebuild{edges, points, scene_graph};
+//    rebuild.BeginRebuild();
     return 0;
 }

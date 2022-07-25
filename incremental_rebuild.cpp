@@ -163,7 +163,7 @@ namespace sfm {
             std::vector<cv::Point2f> camera_point_1;
             std::vector<cv::Point2f> camera_point_2;
 
-            CleanOutliers(index, clean_point_1, clean_point_2);
+//            CleanOutliers(index, clean_point_1, clean_point_2);
 
             std::vector<cv::Point3f> world_point;
 
@@ -191,7 +191,7 @@ namespace sfm {
         }
     }
 
-    void IncrementalRebuild::CleanOutliers(int index,
+ /*   void IncrementalRebuild::CleanOutliers(int index,
                                            std::vector<cv::Point2f> &clean_points_1,
                                            std::vector<cv::Point2f> &clean_points_2) {
         auto temp_edge = this->edges_[index];
@@ -213,5 +213,5 @@ namespace sfm {
             }
         }
         std::cout << clean_match.size() << ' ' << temp_edge->key_points_1_.size() << std::endl;
-    }
+    }*/
 }

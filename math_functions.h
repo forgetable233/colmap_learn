@@ -23,7 +23,7 @@
 #include <Eigen/Eigenvalues>
 
 #include "img_loader.h"
-#include "threholds.h"
+#include "thresholds.h"
 
 namespace sfm {
     class MathFunction {

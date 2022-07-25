@@ -18,7 +18,7 @@
 #include <eigen3/Eigen/Core>
 
 #include "camera_model.h"
-#include "threholds.h"
+#include "thresholds.h"
 #include "point2d.h"
 
 namespace sfm {

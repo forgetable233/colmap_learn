@@ -43,7 +43,11 @@ namespace sfm {
 
         void AddWoldPoint(Eigen::Vector3d _world_point);
 
-        inline void AddCorrPoint(int image_id, int point_id);
+        inline bool FindPoint(int image_id);
+
+        void AddCorrPoint(int image_id, int point_id);
+
+        int GetCorrNumber();
 
         ~Point2d();
     };
