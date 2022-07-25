@@ -11,19 +11,16 @@
 #include <opencv2/core/types.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/opencv.hpp>
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 #include <Eigen/Dense>
 
 namespace sfm {
     class CameraModel {
     private:
+        bool InitialParameters(cv::Mat &_image, int _key);
 
     public:
         int key_{};
-
-        cv::Mat image_{};
-
-//        <float, 3, 4> T_{};
 
         std::vector<cv::KeyPoint> key_points_{};
 
@@ -42,8 +39,6 @@ namespace sfm {
         void ComputeCameraPose();
 
         void SetCameraPose(const cv::Mat &_R, const cv::Mat &_t);
-
-        bool InitialParameters(cv::Mat &_image, int _key);
 
         ~CameraModel() = default;
     };

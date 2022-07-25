@@ -18,7 +18,7 @@
 
 #include "camera_model.h"
 #include "edge.h"
-#include "point.h"
+#include "point2d.h"
 #include "threholds.h"
 
 namespace sfm {
@@ -32,7 +32,7 @@ namespace sfm {
 
         std::vector<std::shared_ptr<Edge>> edges_;
 
-        std::shared_ptr<Points> points_;
+        std::shared_ptr<Point2d> points_;
 
         std::map<int, int> keys_;
     public:
@@ -41,7 +41,7 @@ namespace sfm {
         ~IncrementalRebuild() = default;
 
         IncrementalRebuild(const std::vector<std::shared_ptr<Edge>> &_edges,
-                           const std::shared_ptr<Points> &_points,
+                           const std::shared_ptr<Point2d> &_points,
                            const int _scene_graph[IMAGE_NUMBER][IMAGE_NUMBER]);
 
         bool Init(int index);

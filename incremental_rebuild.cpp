@@ -7,7 +7,7 @@
 namespace sfm {
 
     IncrementalRebuild::IncrementalRebuild(const std::vector<std::shared_ptr<Edge>> &_edges,
-                                           const std::shared_ptr<Points> &_points,
+                                           const std::shared_ptr<Point2d> &_points,
                                            const int (*_scene_graph)[IMAGE_NUMBER]) {
         this->edges_.resize(_edges.size());
         std::copy(_edges.begin(), _edges.end(), this->edges_.begin());
@@ -40,8 +40,6 @@ namespace sfm {
         joined_list.get()[begin_index] = true;
         if (Init(begin_index)) {
             std::cout << "Have finished the initialize" << std::endl;
-//            ShowMatchResult(begin_index);
-            points_->ViewPoints();
         } else {
             std::cerr << "Error occurred unable to initialize" << std::endl;
         }
@@ -190,7 +188,6 @@ namespace sfm {
             }
 
             /** 针对完成三角化的点进行索引的构建 **/
-            points_->AddCloudPoint(edge, world_point);
         }
     }
 
@@ -216,12 +213,5 @@ namespace sfm {
             }
         }
         std::cout << clean_match.size() << ' ' << temp_edge->key_points_1_.size() << std::endl;
-        cv::drawMatches(edges_[begin_index]->camera1_->image_, edges_[begin_index]->camera1_->key_points_,
-                        edges_[begin_index]->camera2_->image_, edges_[begin_index]->camera2_->key_points_,
-                        clean_match, match_image);
-
-        cv::imshow("The begin pair", match_image);
-//        cv::imshow("The camera1", edges_[begin_index]->camera2_->image_);
-        cv::waitKey(0);
     }
 }

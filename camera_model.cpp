@@ -12,9 +12,13 @@ namespace sfm {
     }
 
     CameraModel::CameraModel(std::vector<CameraModel>::iterator iterator) {
-        if (!InitialParameters(iterator->image_, iterator->key_)) {
-            std::cerr << "Initial parameters fail" << std::endl;
-        }
+        this->T_ = std::move(iterator->T_);
+        this->K_ = std::move(iterator->K_);
+        iterator->descriptors_.copyTo(this->descriptors_);
+        this->key_ = iterator->key_;
+        std::copy(iterator->key_points_.begin(),
+                  iterator->key_points_.end(),
+                  this->key_points_.begin());
     }
 
     void CameraModel::SetCameraPose(const cv::Mat &R, const cv::Mat &_t) {
@@ -33,7 +37,6 @@ namespace sfm {
             std::cerr << "The input image is empty" << std::endl;
             return false;
         }
-        _image.copyTo(this->image_);
         this->key_ = _key;
 
         int nfeatures{0};
@@ -49,14 +52,14 @@ namespace sfm {
                                                   edgeThreshold,
                                                   sigma);
 
-        sift->detect(this->image_, this->key_points_);
-        sift->compute(this->image_, this->key_points_, this->descriptors_);
+        sift->detect(_image, this->key_points_);
+        sift->compute(_image, this->key_points_, this->descriptors_);
         if (this->key_points_.size() == 0) {
             std::cout << "this image can not find enough key points_" << std::endl;
             std::cout << this->key_ << std::endl;
         }
-        cv::Mat temp = (cv::Mat_<float>(3, 3) << this->image_.cols / 2, 0.0f, this->image_.cols / 2,
-                0.0f, this->image_.cols / 2, this->image_.rows / 2,
+        cv::Mat temp = (cv::Mat_<float>(3, 3) << _image.cols / 2, 0.0f, _image.cols / 2,
+                0.0f, _image.cols / 2, _image.rows / 2,
                 0.0f, 0.0f, 1.0f);
         temp.copyTo(this->K_);
         return true;

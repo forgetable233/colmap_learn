@@ -5,10 +5,11 @@
 #include "img_loader.h"
 #include "camera_model.h"
 #include "edge.h"
-#include "point.h"
+#include "point2d.h"
 #include "math_functions.h"
 #include "threholds.h"
 #include "incremental_rebuild.h"
+#include "corresponse_graph.h"
 
 struct get_key {
     int key;
@@ -25,27 +26,6 @@ struct SortEdges {
         return edge1.matches_ > edge2.matches_;
     }
 } sort_edges;
-
-void DisplayMatchResult(std::vector<sfm::CameraModel> &cameras, std::vector<sfm::Edge> &edges) {
-    for (auto edge: edges) {
-        int key1 = edge.key_ / 100;
-        int key2 = edge.key_ % 100;
-
-        auto camera1 = std::find_if(cameras.begin(), cameras.end(), get_key(key1));
-        auto camera2 = std::find_if(cameras.begin(), cameras.end(), get_key(key2));
-
-        if (camera1 == camera2 || camera1 == cameras.end() || camera2 == cameras.end()) {
-            std::cerr << "unable to find the target camera" << std::endl;
-        }
-
-        cv::Mat match_image;
-        cv::drawMatches(camera1->image_, camera1->key_points_,
-                        camera2->image_, camera2->key_points_,
-                        edge.matches_, match_image);
-        cv::imshow("the match image", match_image);
-        cv::waitKey(0);
-    }
-}
 
 void CVPoint2iToVector3d(const std::vector<cv::Point2i> &point2i, std::vector<Eigen::Vector3d> &vector3d) {
     for (auto point: point2i) {
@@ -131,21 +111,16 @@ void CheckFMatrix(std::vector<std::shared_ptr<sfm::CameraModel>> &cameras) {
 }
 
 int main() {
-//    std::string file_path_windows = "D:\\imageDataset\\gerrard-hall\\gerrard-hall\\loader\\*";
     int scene_graph[IMAGE_NUMBER][IMAGE_NUMBER];
-    std::string file_path_linux = "/home/dcr/codes/CorC++/colmap/testImage/gerrard-hall/newimage/";
-
+    std::string file_path_linux = "/home/dcr/codes/CorC++/colmap/testImage/gerrard-hall/images/";
     std::vector<std::shared_ptr<sfm::CameraModel>> cameras;
     std::vector<std::shared_ptr<sfm::Edge>> edges;
-
-    sfm::Points points_{};
-
-    std::shared_ptr<sfm::Points> points = std::make_shared<sfm::Points>();
+    std::shared_ptr<sfm::Point2d> points = std::make_shared<sfm::Point2d>();
 
     sfm::ImgLoader loader{file_path_linux, cameras};
-    BuildSceneGraph(edges, cameras, scene_graph);
     std::cout << "Have found " << edges.size() << " edges_" << std::endl;
 
+    sfm::CorrespondenceGraph correspondence_graph(cameras);
     sfm::IncrementalRebuild rebuild{edges, points, scene_graph};
     rebuild.BeginRebuild();
     return 0;

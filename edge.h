@@ -19,6 +19,7 @@
 
 #include "camera_model.h"
 #include "threholds.h"
+#include "point2d.h"
 
 namespace sfm {
 
@@ -37,12 +38,6 @@ namespace sfm {
         std::vector<cv::Point2i> key_points_1_;
         std::vector<cv::Point2i> key_points_2_;
 
-        std::vector<int> points1_index_;
-        std::vector<int> points2_index_;
-
-        std::vector<bool> point1_pass_;
-        std::vector<bool> point2_pass_;
-
         cv::Mat e_m_;
         cv::Mat f_m_;
         cv::Mat h_m_;
@@ -54,7 +49,7 @@ namespace sfm {
 
         Edge() = default;
 
-        Edge(const Edge &input_edge);
+        Edge(Edge &input_edge);
 
         Edge(std::vector<CameraModel>::iterator _camera1, std::vector<CameraModel>::iterator _camera2);
 

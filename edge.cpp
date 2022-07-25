@@ -24,7 +24,7 @@ namespace sfm {
         }
     }
 
-    Edge::Edge(const Edge &input_edge) {
+    Edge::Edge(Edge &input_edge) {
         camera1_ = input_edge.camera1_;
         camera2_ = input_edge.camera2_;
         this->e_m_ = std::move(input_edge.e_m_);
@@ -34,17 +34,14 @@ namespace sfm {
         this->t_ = std::move(input_edge.t_);
         this->key_points_1_ = std::move(input_edge.key_points_1_);
         this->key_points_2_ = std::move(input_edge.key_points_2_);
-        this->points1_index_ = std::move(input_edge.points1_index_);
-        this->points2_index_ = std::move(input_edge.points2_index_);
-        this->point1_pass_ = std::move(input_edge.point1_pass_);
-        this->point2_pass_ = std::move(input_edge.point2_pass_);
 
         if (!InitialParameters(true)) {
             std::cerr << "Unable the initial the parameters!" << std::endl;
         }
     }
 
-    Edge::Edge(const std::shared_ptr<CameraModel> &_camera1, const std::shared_ptr<CameraModel> &_camera2) {
+    Edge::Edge(const std::shared_ptr<CameraModel> &_camera1,
+               const std::shared_ptr<CameraModel> &_camera2) {
         this->camera1_ = _camera1;
         this->camera2_ = _camera2;
 
@@ -84,7 +81,6 @@ namespace sfm {
             ComputeMatrix();
             EstimatePose();
         }
-//        std::cout << key_points_1_.size() << ' ' << key_points_2_.size() << std::endl;
         return true;
     }
 
@@ -118,9 +114,6 @@ namespace sfm {
         for (auto match: this->matches_) {
             this->key_points_1_.push_back(camera1->key_points_[match.queryIdx].pt);
             this->key_points_2_.push_back(camera2->key_points_[match.trainIdx].pt);
-            /** 保存对应的索引 **/
-            this->points1_index_.push_back(match.queryIdx);
-            this->points2_index_.push_back(match.trainIdx);
         }
     }
 
@@ -128,9 +121,6 @@ namespace sfm {
         for (auto match: this->matches_) {
             this->key_points_1_.push_back(this->camera1_->key_points_[match.queryIdx].pt);
             this->key_points_2_.push_back(this->camera2_->key_points_[match.trainIdx].pt);
-            /** 保存对应的索引 **/
-            this->points1_index_.push_back(match.queryIdx);
-            this->points2_index_.push_back(match.trainIdx);
         }
     }
 
@@ -174,17 +164,6 @@ namespace sfm {
 
             temp_point_1.convertTo(temp_point_1, this->f_m_.type());
             temp_point_2.convertTo(temp_point_2, this->f_m_.type());
-            /** 使用对极几何验证,同时这里也是计算对应的外点数 **/
-            check = temp_point_2.t() * this->f_m_ * temp_point_1;
-            if (fabs(check.at<float>(0, 0)) <= FUNDAMENTAL_INLIER_THRESHOLD) {
-                point1_pass_.push_back(true);
-                point2_pass_.push_back(true);
-                number++;
-            } else {
-                point1_pass_.push_back(false);
-                point2_pass_.push_back(false);
-                continue;
-            }
         }
         this->f_m_inliers_ = number;
         if (static_cast<double>(number) / static_cast<double>(size) >=
@@ -244,8 +223,8 @@ namespace sfm {
         return 0;
     }
 
-    void Edge::SetInitialCameraPose(const cv::Mat &_R, const cv::Mat &_t) {
-        camera2_->SetCameraPose(_R, _t);
+    void Edge::SetInitialCameraPose(const cv::Mat &R, const cv::Mat &_t) {
+        camera2_->SetCameraPose(R, _t);
     }
 
     void Edge::CleanOutliers(std::vector<cv::Point2f> &outliers_point1, std::vector<cv::Point2f> &outliers_point2,
