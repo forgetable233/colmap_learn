@@ -18,6 +18,11 @@
 #include "thresholds.h"
 
 namespace sfm {
+    enum CameraChoice {
+        kCamera1 = 0,
+        kCamera2 = 1
+    };
+
     class CorrespondenceGraph {
     private:
         // 保存每一张图片的相关性，用来选择最佳起始图片
@@ -29,6 +34,8 @@ namespace sfm {
 
         // 此处为对所有的点构建对应的key，以方便进行查找
         // 此处的key为由camera_id与point_id共同组成
+        int joined_number_ = 0;
+
         std::unordered_map<int, std::shared_ptr<Point2d>> points_;
 
         std::unordered_map<int, std::shared_ptr<Edge>> edges_;
@@ -39,6 +46,8 @@ namespace sfm {
     public:
         CorrespondenceGraph() = default;
 
+        explicit CorrespondenceGraph(CorrespondenceGraph *_graph);
+
         explicit CorrespondenceGraph(std::vector<std::shared_ptr<CameraModel>> &cameras);
 
         ~CorrespondenceGraph() = default;
@@ -47,7 +56,17 @@ namespace sfm {
 
         void BuildPointKey();
 
+        int GetEdgeSize();
+
         void FindTransitiveCorrespondences(int point_key, int camera_key);
+
+        int GetBestBeginPair();
+
+        int GetNextBestPair();
+
+        std::shared_ptr<CameraModel> GetCameraModel(int index, CameraChoice choice);
+
+        std::shared_ptr<Edge> GetEdge(int index);
 
         static inline int ComputePointKey(int camera_key, int point_index);
 

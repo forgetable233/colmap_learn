@@ -58,7 +58,7 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "settings.editor.selected.configurable": "reference.settings.project.statistic.project.settings",
     "structure.view.defaults.are.configured": "true"
   }
 }]]></component>
@@ -119,7 +119,7 @@
       <workItem from="1658669069832" duration="37000" />
       <workItem from="1658669113824" duration="5700000" />
       <workItem from="1658730798895" duration="10673000" />
-      <workItem from="1658747481445" duration="5890000" />
+      <workItem from="1658747481445" duration="11792000" />
     </task>
     <servers />
   </component>

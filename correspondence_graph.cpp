@@ -22,6 +22,13 @@ namespace sfm {
 //        IncreaseSearch();
     }
 
+    CorrespondenceGraph::CorrespondenceGraph(CorrespondenceGraph *_graph) {
+        this->images_ = std::move(_graph->images_);
+        this->edges_ = std::move(_graph->edges_);
+        this->points_ = std::move(_graph->points_);
+        this->scene_graph_ = std::move(_graph->scene_graph_);
+    }
+
     inline int CorrespondenceGraph::ComputePointKey(int camera_key, int point_index) {
         return camera_key * 10000 + point_index;
     }
@@ -33,6 +40,7 @@ namespace sfm {
     }
 
     // 对每个点构建对应的所有的相关性
+    // 这个目前还不是很重要
     void CorrespondenceGraph::IncreaseSearch() {
         for (auto &pair: scene_graph_) {
             // 此时这两张图片之间的关系已经建立
@@ -75,7 +83,9 @@ namespace sfm {
                     std::shared_ptr<Point2d> temp = std::make_shared<Point2d>(match.queryIdx, temp_point);
                     points_.insert(std::pair<int, std::shared_ptr<Point2d>>(point_key1, temp));
                     points_[point_key1]->AddCorrPoint(camera2, match.trainIdx);
+                    images_.at(camera1).correspondence_number++;
                 } else {
+                    images_.at(camera1).correspondence_number++;
                     points_[point_key1]->AddCorrPoint(camera2, match.trainIdx);
                 }
                 if (points_.find(point_key2) == points_.end()) {
@@ -85,10 +95,72 @@ namespace sfm {
                     std::shared_ptr<Point2d> temp = std::make_shared<Point2d>(match.trainIdx, temp_point);
                     points_.insert(std::pair<int, std::shared_ptr<Point2d>>(point_key2, temp));
                     points_[point_key2]->AddCorrPoint(camera1, match.queryIdx);
+                    images_.at(camera2).correspondence_number++;
                 } else {
                     points_[point_key2]->AddCorrPoint(camera1, match.queryIdx);
+                    images_.at(camera2).correspondence_number++;
                 }
             }
         }
+    }
+
+    void CorrespondenceGraph::FindTransitiveCorrespondences(int point_key, int camera_key) {
+
+    }
+
+    int CorrespondenceGraph::GetEdgeSize() {
+        return this->edges_.size();
+    }
+
+    int CorrespondenceGraph::GetBestBeginPair() {
+        int index = 0;
+        unsigned max = 0;
+        for (const auto &edge: edges_) {
+            int camera1 = edge.first / 100;
+            int camera2 = edge.first % 100;
+            unsigned int local_max =
+                    images_.at(camera1).correspondence_number + images_.at(camera2).correspondence_number;
+            if (local_max > max) {
+                max = local_max;
+                index = edge.first;
+            }
+        }
+        edges_[index]->joined = true;
+        return index;
+    }
+
+    std::shared_ptr<CameraModel> CorrespondenceGraph::GetCameraModel(int index, CameraChoice choice) {
+        if (choice == CameraChoice::kCamera1) {
+            return this->edges_[index]->camera1_;
+        } else {
+            return this->edges_[index]->camera2_;
+        }
+    }
+
+    std::shared_ptr<Edge> CorrespondenceGraph::GetEdge(int index) {
+        return this->edges_[index];
+    }
+
+    // 目前这里先不写场景图的增强，先写个找下一个最大覆盖的
+    int CorrespondenceGraph::GetNextBestPair() {
+        if (joined_number_ == edges_.size()) {
+            return -1;
+        }
+        joined_number_++;
+        int index = -1;
+        int max = -1;
+        for (const auto &edge: edges_) {
+            if (!edge.second->joined) {
+                int camera1 = edge.first / 100;
+                int camera2 = edge.first % 100;
+                unsigned int local_max =
+                        images_.at(camera1).correspondence_number + images_.at(camera2).correspondence_number;
+                if (local_max > max) {
+                    max = local_max;
+                    index = edge.first;
+                }
+            }
+        }
+        return index;
     }
 }

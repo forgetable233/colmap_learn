@@ -20,6 +20,7 @@
 #include "edge.h"
 #include "point2d.h"
 #include "thresholds.h"
+#include "correspondence_graph.h"
 
 namespace sfm {
     enum TrianguleType {
@@ -28,21 +29,13 @@ namespace sfm {
     };
     class IncrementalRebuild {
     private:
-        int scene_graph[IMAGE_NUMBER][IMAGE_NUMBER];
-
-        std::vector<std::shared_ptr<Edge>> edges_;
-
-        std::shared_ptr<Point2d> points_;
-
-        std::map<int, int> keys_;
+        std::shared_ptr<CorrespondenceGraph> scene_graph_;
     public:
         IncrementalRebuild() = default;
 
         ~IncrementalRebuild() = default;
 
-        IncrementalRebuild(const std::vector<std::shared_ptr<Edge>> &_edges,
-                           const std::shared_ptr<Point2d> &_points,
-                           const int _scene_graph[IMAGE_NUMBER][IMAGE_NUMBER]);
+        IncrementalRebuild(CorrespondenceGraph* _graph);
 
         bool Init(int index);
 

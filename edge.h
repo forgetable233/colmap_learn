@@ -47,6 +47,8 @@ namespace sfm {
         std::shared_ptr<CameraModel> camera1_;
         std::shared_ptr<CameraModel> camera2_;
 
+        bool joined = false;
+
         Edge() = default;
 
         Edge(Edge &input_edge);
