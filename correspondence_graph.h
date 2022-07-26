@@ -30,6 +30,8 @@ namespace sfm {
             explicit Image(unsigned int _corr) : correspondence_number(_corr) {}
 
             unsigned int correspondence_number = 0;
+
+            bool registered = false;
         };
 
         // 此处为对所有的点构建对应的key，以方便进行查找

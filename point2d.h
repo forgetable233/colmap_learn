@@ -48,7 +48,7 @@ namespace sfm {
 
         inline bool FindPoint(int image_id);
 
-        void AddCorrPoint(int image_id, int point_id);
+        bool AddCorrPoint(int image_id, int point_id);
 
         int GetCorrNumber();
 

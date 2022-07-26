@@ -74,6 +74,7 @@ namespace sfm {
             }
             images_.at(camera1).correspondence_number += edge.second->matches_.size();
             images_.at(camera2).correspondence_number += edge.second->matches_.size();
+            // 目前不需要迭代搜索，因为查找方式本质上还是穷举查找，在之后数据集增加后可能需要改变，同时存在外点的干扰
             for (const auto &match: edge.second->matches_) {
                 int point_key1 = ComputePointKey(camera1, match.queryIdx);
                 int point_key2 = ComputePointKey(camera2, match.trainIdx);
@@ -83,11 +84,10 @@ namespace sfm {
                             << edge.second->key_points_1_[match.queryIdx].x, edge.second->key_points_1_[match.queryIdx].y;
                     std::shared_ptr<Point2d> temp = std::make_shared<Point2d>(match.queryIdx, temp_point);
                     points_.insert(std::pair<int, std::shared_ptr<Point2d>>(point_key1, temp));
-                    points_[point_key1]->AddCorrPoint(camera2, match.trainIdx);
+
+                }
+                if (points_.at(point_key1)->AddCorrPoint(camera2, match.trainIdx)) {
                     images_.at(camera1).correspondence_number++;
-                } else {
-                    images_.at(camera1).correspondence_number++;
-                    points_[point_key1]->AddCorrPoint(camera2, match.trainIdx);
                 }
                 if (points_.find(point_key2) == points_.end()) {
                     Eigen::Vector2d temp_point;
@@ -95,10 +95,8 @@ namespace sfm {
                             << edge.second->key_points_2_[match.trainIdx].x, edge.second->key_points_1_[match.trainIdx].y;
                     std::shared_ptr<Point2d> temp = std::make_shared<Point2d>(match.trainIdx, temp_point);
                     points_.insert(std::pair<int, std::shared_ptr<Point2d>>(point_key2, temp));
-                    points_[point_key2]->AddCorrPoint(camera1, match.queryIdx);
-                    images_.at(camera2).correspondence_number++;
-                } else {
-                    points_[point_key2]->AddCorrPoint(camera1, match.queryIdx);
+                }
+                if (points_.at(point_key2)->AddCorrPoint(camera1, match.queryIdx)) {
                     images_.at(camera2).correspondence_number++;
                 }
             }
@@ -165,6 +163,12 @@ namespace sfm {
         return index;
     }
 
+    /**
+     * 用F过滤掉全部的外点
+     * @param index
+     * @param clean_points1
+     * @param clean_points2
+     */
     void CorrespondenceGraph::GetInliers(int index,
                                          std::vector<cv::Point2f> &clean_points1,
                                          std::vector<cv::Point2f> &clean_points2) {
@@ -182,6 +186,13 @@ namespace sfm {
         }
     }
 
+    /**
+     * 计划是计算对应世界点的hash的key，目前感觉还不需要，没有完全完成
+     * @param camera1
+     * @param camera2
+     * @param index
+     * @return
+     */
     int CorrespondenceGraph::ComputeWorldPointKey(int camera1, int camera2, int index) {
         int camera_key = ComputePointKey(camera1, camera2);
         int key1 = ComputePointKey(camera1, edges_[camera_key]->matches_[index].queryIdx);
@@ -194,19 +205,34 @@ namespace sfm {
         }
     }
 
+    /**
+     * 将计算出的世界点与二维点联系上
+     * @param camera1
+     * @param camera2
+     * @param index
+     * @param point_ptr
+     */
     void CorrespondenceGraph::AddWorldPoints(int camera1, int camera2, int index, std::shared_ptr<Point3d> point_ptr) {
         int camera_key = ComputeEdgeKey(camera1, camera2);
         int point_key1 = ComputePointKey(camera1, edges_.at(camera_key)->matches_[index].queryIdx);
         int point_key2 = ComputePointKey(camera2, edges_.at(camera_key)->matches_[index].trainIdx);
         if (points_.at(point_key1)->GetCorrNumber() != points_.at(point_key2)->GetCorrNumber()) {
             std::cerr << "The size of two corr is not equal" << std::endl;
-            return;
+            std::cerr << "There are outliers in the match" << std::endl;
+            std::cerr << points_.at(point_key1)->GetCorrNumber() << ' ' << points_.at(point_key2)->GetCorrNumber()
+                      << std::endl << std::endl;
         }
         points_.at(point_key1)->AddWorldPoints(point_ptr);
-        auto corrs = points_.at(point_key1)->GetCorrs();
-        if (corrs != nullptr) {
-            int size = points_.at(point_key1)->GetCorrNumber();
+        int size = points_.at(point_key1)->GetCorrNumber();
+        if (size != 0) {
+            auto corrs = points_.at(point_key1)->GetCorrs();
+            std::cout << size << std::endl;
             for (int i = 0; i < size; ++i) {
+                std::cout << corrs[i] << ' ';
+            }
+            std::cout << std::endl;
+            for (int i = 0; i < size; ++i) {
+                std::cout << "The id of the corr is " << corrs[i] << std::endl;
                 points_.at(corrs[i])->AddWorldPoints(point_ptr);
             }
         }

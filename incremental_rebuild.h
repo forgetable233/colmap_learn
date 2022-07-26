@@ -45,7 +45,7 @@ namespace sfm {
 
         void Triangulation(int index, TrianguleType type);
 
-        void PixToCam(cv::Mat &K, std::vector<cv::Point2f> &input_points, std::vector<cv::Point2f> &output_points);
+        static void PixToCam(cv::Mat &K, std::vector<cv::Point2f> &input_points, std::vector<cv::Point2f> &output_points);
 
         void BA();
 

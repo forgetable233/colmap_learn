@@ -21,8 +21,13 @@ namespace sfm {
     Point2d::Point2d(int key, cv::Point2i &_points2d) {
     }
 
-    void Point2d::AddCorrPoint(int image_id, int point_id) {
-        correspondence_.insert(std::pair<int, int>(image_id, point_id));
+    bool Point2d::AddCorrPoint(int image_id, int point_id) {
+        if (correspondence_.find(image_id) != correspondence_.end()) {
+            correspondence_.insert(std::pair<int, int>(image_id, point_id));
+            return true;
+        } else {
+            return false;
+        }
     }
 
     bool Point2d::FindPoint(int image_id) {

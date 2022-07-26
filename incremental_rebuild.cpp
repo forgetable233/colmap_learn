@@ -70,7 +70,6 @@ namespace sfm {
         }
     }
 
-    // TODO 构建帧之间的链接
     void IncrementalRebuild::Triangulation(int index, TrianguleType type) {
         auto camera1 = scene_graph_->GetCameraModel(index, CameraChoice::kCamera1);
         auto camera2 = scene_graph_->GetCameraModel(index, CameraChoice::kCamera2);
@@ -108,10 +107,8 @@ namespace sfm {
             cv::triangulatePoints(camera1->T_, camera2->T_,
                                   camera_point_1, camera_point_2,
                                   pst_4d);
-            std::cout << "Have finished the initial triangulation " << std::endl;
             CheckZDepthAndAddWorldPoints(camera1, camera2, pst_4d);
-            std::cout << camera2->T_ << std::endl;
-            std::cout << world_points.size() << std::endl;
+            std::cout << "Have finished the initial triangulation " << std::endl;
             /** 针对完成三角化的点进行索引的构建 **/
         }
     }
@@ -125,13 +122,13 @@ namespace sfm {
     void IncrementalRebuild::CheckZDepthAndAddWorldPoints(const std::shared_ptr<CameraModel> &camera1,
                                                           const std::shared_ptr<CameraModel> &camera2,
                                                           cv::Mat &pst_4d) {
-        std::cout << camera2->K_.type() << camera2->T_.type() << std::endl;
         cv::Mat P1 = camera1->K_ * camera1->T_;
         cv::Mat P2 = camera2->K_ * camera2->T_;
         cv::Mat temp_point = (cv::Mat_<double>(4, 1) << 0.0f, 0.0f, 0.0f, 1.0f);
         cv::Mat check1;
         cv::Mat check2;
         Eigen::Vector3d temp;
+        int sum = 0;
         int key = 0;
         for (int i = 0; i < pst_4d.cols; ++i) {
             temp_point.at<double>(0, 0) = pst_4d.at<double>(0, i);
@@ -141,6 +138,7 @@ namespace sfm {
             check1 = P1.row(2) * temp_point;
             check2 = P2.row(2) * temp_point;
             if (check1.at<double>(0, 0) >=0 && check2.at<double>(0, 0) >= 0) {
+                sum++;
                 temp.x() = temp_point.at<double>(0, 0) / temp_point.at<double>(3, 0);
                 temp.y() = temp_point.at<double>(1, 0) / temp_point.at<double>(3, 0);
                 temp.z() = temp_point.at<double>(2, 0) / temp_point.at<double>(3, 0);
@@ -148,5 +146,6 @@ namespace sfm {
                 scene_graph_->AddWorldPoints(camera1->key_, camera2->key_, i, world_ptr);
             }
         }
+        std::cout << "The size of the initial points is " << sum << std::endl;
     }
 }
