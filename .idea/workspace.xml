@@ -18,17 +18,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="00e7edfa-187b-4a21-9a73-3aca43181e93" name="变更" comment="">
-      <change afterPath="$PROJECT_DIR$/point_viewer.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/point_viewer.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/camera_model.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/camera_model.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/correspondence_graph.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/correspondence_graph.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/correspondence_graph.h" beforeDir="false" afterPath="$PROJECT_DIR$/correspondence_graph.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/edge.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/edge.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/incremental_rebuild.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/incremental_rebuild.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/incremental_rebuild.h" beforeDir="false" afterPath="$PROJECT_DIR$/incremental_rebuild.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/point2d.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/point2d.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/point2d.h" beforeDir="false" afterPath="$PROJECT_DIR$/point2d.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/point3d.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/point3d.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/point3d.h" beforeDir="false" afterPath="$PROJECT_DIR$/point3d.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/point_viewer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/point_viewer.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/point_viewer.h" beforeDir="false" afterPath="$PROJECT_DIR$/point_viewer.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -75,11 +75,6 @@
   }
 }</component>
   <component name="RunManager">
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="test" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="test" TARGET_NAME="test" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="test" RUN_TARGET_NAME="test">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -132,7 +127,8 @@
       <workItem from="1658669113824" duration="5700000" />
       <workItem from="1658730798895" duration="10673000" />
       <workItem from="1658747481445" duration="11848000" />
-      <workItem from="1658798102944" duration="6995000" />
+      <workItem from="1658798102944" duration="7655000" />
+      <workItem from="1658818106741" duration="7690000" />
     </task>
     <servers />
   </component>

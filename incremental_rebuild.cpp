@@ -109,7 +109,7 @@ namespace sfm {
                                   camera_point_1, camera_point_2,
                                   pst_4d);
             std::cout << "Have finished the initial triangulation " << std::endl;
-            CheckZDepth(camera1, camera2, world_points, pst_4d);
+            CheckZDepthAndAddWorldPoints(camera1, camera2, pst_4d);
             std::cout << camera2->T_ << std::endl;
             std::cout << world_points.size() << std::endl;
             /** 针对完成三角化的点进行索引的构建 **/
@@ -122,16 +122,17 @@ namespace sfm {
         scene_graph_->GetInliers(index, clean_points_1, clean_points_2);
     }
 
-    void IncrementalRebuild::CheckZDepth(const std::shared_ptr<CameraModel> &camera1,
-                                         const std::shared_ptr<CameraModel> &camera2,
-                                         std::vector<Eigen::Vector3d> &world_points,
-                                         cv::Mat &pst_4d) {
+    void IncrementalRebuild::CheckZDepthAndAddWorldPoints(const std::shared_ptr<CameraModel> &camera1,
+                                                          const std::shared_ptr<CameraModel> &camera2,
+                                                          cv::Mat &pst_4d) {
         std::cout << camera2->K_.type() << camera2->T_.type() << std::endl;
         cv::Mat P1 = camera1->K_ * camera1->T_;
         cv::Mat P2 = camera2->K_ * camera2->T_;
         cv::Mat temp_point = (cv::Mat_<double>(4, 1) << 0.0f, 0.0f, 0.0f, 1.0f);
         cv::Mat check1;
         cv::Mat check2;
+        Eigen::Vector3d temp;
+        int key = 0;
         for (int i = 0; i < pst_4d.cols; ++i) {
             temp_point.at<double>(0, 0) = pst_4d.at<double>(0, i);
             temp_point.at<double>(1, 0) = pst_4d.at<double>(1, i);
@@ -140,22 +141,12 @@ namespace sfm {
             check1 = P1.row(2) * temp_point;
             check2 = P2.row(2) * temp_point;
             if (check1.at<double>(0, 0) >=0 && check2.at<double>(0, 0) >= 0) {
-                world_points.emplace_back(temp_point.at<double>(0, 0) / temp_point.at<double>(3, 0),
-                                          temp_point.at<double>(1, 0) / temp_point.at<double>(3, 0),
-                                          temp_point.at<double>(2, 0) / temp_point.at<double>(3, 0));
+                temp.x() = temp_point.at<double>(0, 0) / temp_point.at<double>(3, 0);
+                temp.y() = temp_point.at<double>(1, 0) / temp_point.at<double>(3, 0);
+                temp.z() = temp_point.at<double>(2, 0) / temp_point.at<double>(3, 0);
+                std::shared_ptr<Point3d> world_ptr = std::make_shared<Point3d>(temp);
+                scene_graph_->AddWorldPoints(camera1->key_, camera2->key_, i, world_ptr);
             }
         }
     }
-
-    /* void IncrementalRebuild::ShowMatchResult(int begin_index) {
-         std::vector<cv::DMatch> clean_match;
-         cv::Mat match_image;
-         auto temp_edge = this->edges_[begin_index];
-         for (int i = 0; i < temp_edge->key_points_1_.size() && i < temp_edge->key_points_2_.size(); ++i) {
-             if (temp_edge->point1_pass_[i] && temp_edge->point2_pass_[i]) {
-                 clean_match.push_back(temp_edge->matches_[i]);
-             }
-         }
-         std::cout << clean_match.size() << ' ' << temp_edge->key_points_1_.size() << std::endl;
-     }*/
 }

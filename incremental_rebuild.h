@@ -10,6 +10,7 @@
 #include <cmath>
 #include <algorithm>
 #include <map>
+#include <unordered_map>
 
 #include <Eigen/Core>
 #include <Eigen/Dense>
@@ -19,6 +20,7 @@
 #include "camera_model.h"
 #include "edge.h"
 #include "point2d.h"
+#include "point3d.h"
 #include "thresholds.h"
 #include "correspondence_graph.h"
 
@@ -30,6 +32,8 @@ namespace sfm {
     class IncrementalRebuild {
     private:
         std::shared_ptr<CorrespondenceGraph> scene_graph_;
+
+        std::unordered_map<int, std::shared_ptr<Point3d>> world_points_;
     public:
         IncrementalRebuild() = default;
 
@@ -49,10 +53,9 @@ namespace sfm {
 
         void ShowMatchResult(int begin_index);
 
-        void CheckZDepth(const std::shared_ptr<CameraModel>& camera1,
-                         const std::shared_ptr<CameraModel>& camera2,
-                         std::vector<Eigen::Vector3d> &world_points,
-                         cv::Mat &pst_4d);
+        void CheckZDepthAndAddWorldPoints(const std::shared_ptr<CameraModel>& camera1,
+                                          const std::shared_ptr<CameraModel>& camera2,
+                                          cv::Mat &pst_4d);
 
         void CleanOutliers(int index,
                            std::vector<cv::Point2f> &clean_points_1,

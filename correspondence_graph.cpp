@@ -4,6 +4,8 @@
 
 #include "correspondence_graph.h"
 
+#include <utility>
+
 namespace sfm {
     CorrespondenceGraph::CorrespondenceGraph(std::vector<std::shared_ptr<CameraModel>> &cameras) {
         for (int i = 0; i < IMAGE_NUMBER; ++i) {
@@ -53,7 +55,6 @@ namespace sfm {
                 for (const auto &match: edges_[key]->matches_) {
                     // 这个的位置是固定的，queryIndx和trainIdx在两个edge下是相同的
                     int temp_point_key = ComputePointKey(camera2, match.queryIdx);
-
                 }
             }
         }
@@ -177,6 +178,36 @@ namespace sfm {
             if (check.at<double>(0, 0) <= FUNDAMENTAL_INLIER_THRESHOLD) {
                 clean_points1.emplace_back(point1->x, point1->y);
                 clean_points2.emplace_back(point2->x, point2->y);
+            }
+        }
+    }
+
+    int CorrespondenceGraph::ComputeWorldPointKey(int camera1, int camera2, int index) {
+        int camera_key = ComputePointKey(camera1, camera2);
+        int key1 = ComputePointKey(camera1, edges_[camera_key]->matches_[index].queryIdx);
+        int key2 = ComputePointKey(camera2, edges_[camera_key]->matches_[index].trainIdx);
+        if (points_.at(key1)->GetCorrNumber() != points_.at(key2)->GetCorrNumber()) {
+            std::cerr << "Error occurred the two related points correspondence is not equal" << std::endl;
+            return -1;
+        } else {
+            return points_.at(key1)->ComputePointKey(camera1, edges_[camera_key]->matches_[index].queryIdx);
+        }
+    }
+
+    void CorrespondenceGraph::AddWorldPoints(int camera1, int camera2, int index, std::shared_ptr<Point3d> point_ptr) {
+        int camera_key = ComputeEdgeKey(camera1, camera2);
+        int point_key1 = ComputePointKey(camera1, edges_.at(camera_key)->matches_[index].queryIdx);
+        int point_key2 = ComputePointKey(camera2, edges_.at(camera_key)->matches_[index].trainIdx);
+        if (points_.at(point_key1)->GetCorrNumber() != points_.at(point_key2)->GetCorrNumber()) {
+            std::cerr << "The size of two corr is not equal" << std::endl;
+            return;
+        }
+        points_.at(point_key1)->AddWorldPoints(point_ptr);
+        auto corrs = points_.at(point_key1)->GetCorrs();
+        if (corrs != nullptr) {
+            int size = points_.at(point_key1)->GetCorrNumber();
+            for (int i = 0; i < size; ++i) {
+                points_.at(corrs[i])->AddWorldPoints(point_ptr);
             }
         }
     }

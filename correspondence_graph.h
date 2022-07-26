@@ -75,6 +75,10 @@ namespace sfm {
         static inline int ComputePointKey(int camera_key, int point_index);
 
         static inline int ComputeEdgeKey(int camera1, int camera2);
+
+        int ComputeWorldPointKey(int camera1, int camera2, int index);
+
+        void AddWorldPoints(int camera1, int camera2, int index, std::shared_ptr<Point3d> point_ptr);
     };
 }
 

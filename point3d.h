@@ -7,6 +7,7 @@
 #include <iostream>
 #include <vector>
 #include <memory>
+#include <unordered_map>
 
 #include <Eigen/Core>
 namespace sfm {
@@ -20,6 +21,8 @@ namespace sfm {
         Point3d() = default;
 
         Point3d(int key, Eigen::Vector3d _point);
+
+        Point3d(Eigen::Vector3d _point);
 
         ~Point3d() = default;
     };

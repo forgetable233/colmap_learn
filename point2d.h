@@ -22,6 +22,7 @@
 
 #include "edge.h"
 #include "camera_model.h"
+#include "point3d.h"
 
 namespace sfm {
     class Point2d {
@@ -32,6 +33,8 @@ namespace sfm {
         std::unordered_map<int, int> correspondence_;
 
         int world_point_id_ = -1;
+
+        std::shared_ptr<Point3d> world_point_;
 
         bool registered = false;
     public:
@@ -48,6 +51,12 @@ namespace sfm {
         void AddCorrPoint(int image_id, int point_id);
 
         int GetCorrNumber();
+
+        int ComputePointKey(int camera, int index);
+
+        std::shared_ptr<int []> GetCorrs();
+
+        void AddWorldPoints(std::shared_ptr<Point3d> point_ptr);
 
         ~Point2d();
     };
