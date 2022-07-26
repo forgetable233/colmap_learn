@@ -20,23 +20,27 @@
 #include <pcl/visualization/point_cloud_color_handlers.h>
 #include <pcl/io/io.h>
 #include <pcl/io/pcd_io.h>
+#include <pcl/io/ply_io.h>
+#include <pcl/point_types.h>
 
 
 namespace sfm {
 
-    class point_viewer {
+    class PointViewer {
     private:
         std::vector<pcl::PointXYZRGB> points_;
 
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_;
-    public:
-        point_viewer();
 
-        point_viewer(const std::vector<Eigen::Vector3d> &world_points);
+        pcl::visualization::PCLVisualizer viewer_;
+    public:
+        PointViewer();
+
+        explicit PointViewer(const std::vector<Eigen::Vector3d> &world_points);
 
         void ViewPoints();
 
-        virtual ~point_viewer();
+        virtual ~PointViewer();
     };
 } // sfm
 

@@ -24,14 +24,15 @@ namespace sfm {
 
         if (Init(begin_index)) {
             std::cout << "Have finished the initialize" << std::endl;
+            ViewAllPoints();
         } else {
             std::cerr << "Error occurred unable to initialize" << std::endl;
         }
-//        while ((next_best_index = scene_graph_->GetNextBestPair()) != -1) {
-//            last_pair = next_best_index;
-//            auto next_best = scene_graph_->GetEdge(next_best_index);
-//        }
-//        std::cout << "Have finished the rebuild" << std::endl;
+        /*while ((next_best_index = scene_graph_->GetNextBestPair()) != -1) {
+            last_pair = next_best_index;
+            auto next_best = scene_graph_->GetEdge(next_best_index);
+        }
+        std::cout << "Have finished the rebuild" << std::endl;*/
     }
 
     int
@@ -107,6 +108,7 @@ namespace sfm {
             cv::triangulatePoints(camera1->T_, camera2->T_,
                                   camera_point_1, camera_point_2,
                                   pst_4d);
+            std::cout << pst_4d.type() << std::endl;
             CheckZDepthAndAddWorldPoints(camera1, camera2, pst_4d);
             std::cout << "Have finished the initial triangulation " << std::endl;
             /** 针对完成三角化的点进行索引的构建 **/
@@ -128,24 +130,44 @@ namespace sfm {
         cv::Mat check1;
         cv::Mat check2;
         Eigen::Vector3d temp;
-        int sum = 0;
         int key = 0;
         for (int i = 0; i < pst_4d.cols; ++i) {
-            temp_point.at<double>(0, 0) = pst_4d.at<double>(0, i);
-            temp_point.at<double>(1, 0) = pst_4d.at<double>(1, i);
-            temp_point.at<double>(2, 0) = pst_4d.at<double>(2, i);
-            temp_point.at<double>(3, 0) = pst_4d.at<double>(3, i);
+            temp_point.at<double>(0, 0) = pst_4d.at<float>(0, i);
+            temp_point.at<double>(1, 0) = pst_4d.at<float>(1, i);
+            temp_point.at<double>(2, 0) = pst_4d.at<float>(2, i);
+            temp_point.at<double>(3, 0) = pst_4d.at<float>(3, i);
             check1 = P1.row(2) * temp_point;
             check2 = P2.row(2) * temp_point;
-            if (check1.at<double>(0, 0) >=0 && check2.at<double>(0, 0) >= 0) {
-                sum++;
+            if (check1.at<double>(0, 0) >= 0 && check2.at<double>(0, 0) >= 0) {
                 temp.x() = temp_point.at<double>(0, 0) / temp_point.at<double>(3, 0);
                 temp.y() = temp_point.at<double>(1, 0) / temp_point.at<double>(3, 0);
                 temp.z() = temp_point.at<double>(2, 0) / temp_point.at<double>(3, 0);
                 std::shared_ptr<Point3d> world_ptr = std::make_shared<Point3d>(temp);
                 scene_graph_->AddWorldPoints(camera1->key_, camera2->key_, i, world_ptr);
+                key = ComputeWorldPointKey();
+                world_points_.insert(std::pair<int, std::shared_ptr<Point3d>>(key, nullptr));
+                world_points_.at(key) = world_ptr;
             }
         }
-        std::cout << "The size of the initial points is " << sum << std::endl;
+        std::cout << "The size of the initial points is " << world_points_.size() << std::endl;
+    }
+
+    void IncrementalRebuild::ViewAllPoints() {
+        std::vector<Eigen::Vector3d> world_points;
+        Eigen::Vector3d temp_point;
+        for (const auto &point: world_points_) {
+            temp_point = point.second->GetPoint();
+            world_points.emplace_back(temp_point.x(), temp_point.y(), temp_point.z());
+        }
+        if (world_points.empty()) {
+            std::cerr << "The size of the world points is zero" << std::endl;
+        } else {
+            std::shared_ptr<PointViewer> viewer = std::make_shared<PointViewer>(world_points);
+            viewer->ViewPoints();
+        }
+    }
+
+    int IncrementalRebuild::ComputeWorldPointKey() {
+        return this->world_points_.size() + 1;
     }
 }

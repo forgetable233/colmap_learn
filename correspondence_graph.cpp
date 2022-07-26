@@ -21,7 +21,6 @@ namespace sfm {
         }
         std::cout << "Have found " << edges_.size() << "edges" << std::endl;
         BuildPointKey();
-//        IncreaseSearch();
     }
 
     CorrespondenceGraph::CorrespondenceGraph(CorrespondenceGraph *_graph) {
@@ -75,6 +74,7 @@ namespace sfm {
             images_.at(camera1).correspondence_number += edge.second->matches_.size();
             images_.at(camera2).correspondence_number += edge.second->matches_.size();
             // 目前不需要迭代搜索，因为查找方式本质上还是穷举查找，在之后数据集增加后可能需要改变，同时存在外点的干扰
+            // TODO 这里有对外点的过滤问题
             for (const auto &match: edge.second->matches_) {
                 int point_key1 = ComputePointKey(camera1, match.queryIdx);
                 int point_key2 = ComputePointKey(camera2, match.trainIdx);

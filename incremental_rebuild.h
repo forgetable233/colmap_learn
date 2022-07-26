@@ -23,6 +23,7 @@
 #include "point3d.h"
 #include "thresholds.h"
 #include "correspondence_graph.h"
+#include "point_viewer.h"
 
 namespace sfm {
     enum TrianguleType {
@@ -51,6 +52,8 @@ namespace sfm {
 
         void BeginRebuild();
 
+        void ViewAllPoints();
+
         void ShowMatchResult(int begin_index);
 
         void CheckZDepthAndAddWorldPoints(const std::shared_ptr<CameraModel>& camera1,
@@ -67,6 +70,8 @@ namespace sfm {
                             const std::shared_ptr<bool[]>& joined_list,
                             const std::shared_ptr<std::vector<int>>& index_list,
                             int last_edge_index);
+
+        int ComputeWorldPointKey();
     };
 }
 

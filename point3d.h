@@ -24,6 +24,8 @@ namespace sfm {
 
         Point3d(Eigen::Vector3d _point);
 
+        Eigen::Vector3d GetPoint();
+
         ~Point3d() = default;
     };
 }
