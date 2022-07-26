@@ -27,11 +27,11 @@ namespace sfm {
         } else {
             std::cerr << "Error occurred unable to initialize" << std::endl;
         }
-        while ((next_best_index = scene_graph_->GetNextBestPair()) != -1) {
-            last_pair = next_best_index;
-            auto next_best = scene_graph_->GetEdge(next_best_index);
-        }
-        std::cout << "Have finished the rebuild" << std::endl;
+//        while ((next_best_index = scene_graph_->GetNextBestPair()) != -1) {
+//            last_pair = next_best_index;
+//            auto next_best = scene_graph_->GetEdge(next_best_index);
+//        }
+//        std::cout << "Have finished the rebuild" << std::endl;
     }
 
     int
@@ -52,7 +52,8 @@ namespace sfm {
         return true;
     }
 
-    void IncrementalRebuild::PixToCam(cv::Mat &K, std::vector<cv::Point2f> &input_points,
+    void IncrementalRebuild::PixToCam(cv::Mat &K,
+                                      std::vector<cv::Point2f> &input_points,
                                       std::vector<cv::Point2f> &output_points) {
         if (K.cols != 3 || K.rows != 3) {
             std::cerr << "the col or the row of the input K isn't equal to 3" << std::endl;
@@ -62,13 +63,14 @@ namespace sfm {
         cv::invert(K, inverted_K);
 
         for (auto point: input_points) {
-            cv::Mat temp_input_point = (cv::Mat_<float>(3, 1) << point.x, point.y, 1.0f);
+            cv::Mat temp_input_point = (cv::Mat_<double>(3, 1) << point.x, point.y, 1.0f);
             cv::Mat temp_output_point = inverted_K * temp_input_point;
-            output_points.emplace_back(temp_output_point.at<float>(0, 0),
-                                       temp_output_point.at<float>(1, 0));
+            output_points.emplace_back(temp_output_point.at<double>(0, 0),
+                                       temp_output_point.at<double>(1, 0));
         }
     }
 
+    // TODO 构建帧之间的链接
     void IncrementalRebuild::Triangulation(int index, TrianguleType type) {
         auto camera1 = scene_graph_->GetCameraModel(index, CameraChoice::kCamera1);
         auto camera2 = scene_graph_->GetCameraModel(index, CameraChoice::kCamera2);
@@ -93,10 +95,9 @@ namespace sfm {
             std::vector<cv::Point2f> clean_point_2;
             std::vector<cv::Point2f> camera_point_1;
             std::vector<cv::Point2f> camera_point_2;
+            std::vector<Eigen::Vector3d> world_points;
 
-//            CleanOutliers(index, clean_point_1, clean_point_2);
-
-            std::vector<cv::Point3f> world_point;
+            CleanOutliers(index, clean_point_1, clean_point_2);
 
             /** 将像素坐标转化到相机坐标系下 **/
             PixToCam(camera1->K_, clean_point_1, camera_point_1);
@@ -107,42 +108,54 @@ namespace sfm {
             cv::triangulatePoints(camera1->T_, camera2->T_,
                                   camera_point_1, camera_point_2,
                                   pst_4d);
-            std::cout << "Have finished the triangulation " << std::endl;
-            for (int i = 0; i < pst_4d.cols; ++i) {
-                if (pst_4d.at<float>(2, i) / pst_4d.at<float>(3, i) > 0) {
-                    world_point.emplace_back(cv::Point3f{pst_4d.at<float>(0, i) / pst_4d.at<float>(3, i),
-                                                         pst_4d.at<float>(1, i) / pst_4d.at<float>(3, i),
-                                                         pst_4d.at<float>(2, i) / pst_4d.at<float>(3, i)});
-                }
-                Eigen::Vector4d w_point;
-                w_point << world_point.back().x, world_point.back().y, world_point.back().z, 1.0f;
-            }
-
+            std::cout << "Have finished the initial triangulation " << std::endl;
+            CheckZDepth(camera1, camera2, world_points, pst_4d);
+            std::cout << camera2->T_ << std::endl;
+            std::cout << world_points.size() << std::endl;
             /** 针对完成三角化的点进行索引的构建 **/
         }
     }
 
-    /*   void IncrementalRebuild::CleanOutliers(int index,
-                                              std::vector<cv::Point2f> &clean_points_1,
-                                              std::vector<cv::Point2f> &clean_points_2) {
-           auto temp_edge = this->edges_[index];
-           for (int i = 0; i < temp_edge->key_points_1_.size(); ++i) {
-               if (temp_edge->point1_pass_[i] && temp_edge->point2_pass_[i]) {
-                   clean_points_1.push_back(temp_edge->key_points_1_[i]);
-                   clean_points_2.push_back(temp_edge->key_points_2_[i]);
-               }
-           }
-       }
+    void IncrementalRebuild::CleanOutliers(int index,
+                                           std::vector<cv::Point2f> &clean_points_1,
+                                           std::vector<cv::Point2f> &clean_points_2) {
+        scene_graph_->GetInliers(index, clean_points_1, clean_points_2);
+    }
 
-       void IncrementalRebuild::ShowMatchResult(int begin_index) {
-           std::vector<cv::DMatch> clean_match;
-           cv::Mat match_image;
-           auto temp_edge = this->edges_[begin_index];
-           for (int i = 0; i < temp_edge->key_points_1_.size() && i < temp_edge->key_points_2_.size(); ++i) {
-               if (temp_edge->point1_pass_[i] && temp_edge->point2_pass_[i]) {
-                   clean_match.push_back(temp_edge->matches_[i]);
-               }
-           }
-           std::cout << clean_match.size() << ' ' << temp_edge->key_points_1_.size() << std::endl;
-       }*/
+    void IncrementalRebuild::CheckZDepth(const std::shared_ptr<CameraModel> &camera1,
+                                         const std::shared_ptr<CameraModel> &camera2,
+                                         std::vector<Eigen::Vector3d> &world_points,
+                                         cv::Mat &pst_4d) {
+        std::cout << camera2->K_.type() << camera2->T_.type() << std::endl;
+        cv::Mat P1 = camera1->K_ * camera1->T_;
+        cv::Mat P2 = camera2->K_ * camera2->T_;
+        cv::Mat temp_point = (cv::Mat_<double>(4, 1) << 0.0f, 0.0f, 0.0f, 1.0f);
+        cv::Mat check1;
+        cv::Mat check2;
+        for (int i = 0; i < pst_4d.cols; ++i) {
+            temp_point.at<double>(0, 0) = pst_4d.at<double>(0, i);
+            temp_point.at<double>(1, 0) = pst_4d.at<double>(1, i);
+            temp_point.at<double>(2, 0) = pst_4d.at<double>(2, i);
+            temp_point.at<double>(3, 0) = pst_4d.at<double>(3, i);
+            check1 = P1.row(2) * temp_point;
+            check2 = P2.row(2) * temp_point;
+            if (check1.at<double>(0, 0) >=0 && check2.at<double>(0, 0) >= 0) {
+                world_points.emplace_back(temp_point.at<double>(0, 0) / temp_point.at<double>(3, 0),
+                                          temp_point.at<double>(1, 0) / temp_point.at<double>(3, 0),
+                                          temp_point.at<double>(2, 0) / temp_point.at<double>(3, 0));
+            }
+        }
+    }
+
+    /* void IncrementalRebuild::ShowMatchResult(int begin_index) {
+         std::vector<cv::DMatch> clean_match;
+         cv::Mat match_image;
+         auto temp_edge = this->edges_[begin_index];
+         for (int i = 0; i < temp_edge->key_points_1_.size() && i < temp_edge->key_points_2_.size(); ++i) {
+             if (temp_edge->point1_pass_[i] && temp_edge->point2_pass_[i]) {
+                 clean_match.push_back(temp_edge->matches_[i]);
+             }
+         }
+         std::cout << clean_match.size() << ' ' << temp_edge->key_points_1_.size() << std::endl;
+     }*/
 }

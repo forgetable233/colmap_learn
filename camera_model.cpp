@@ -58,10 +58,12 @@ namespace sfm {
             std::cout << "this image can not find enough key points_" << std::endl;
             std::cout << this->key_ << std::endl;
         }
-        cv::Mat temp = (cv::Mat_<float>(3, 3) << _image.cols / 2, 0.0f, _image.cols / 2,
-                0.0f, _image.cols / 2, _image.rows / 2,
-                0.0f, 0.0f, 1.0f);
+        cv::Mat temp =
+                (cv::Mat_<float>(3, 3) << _image.cols / 2, 0.0f, _image.cols / 2,
+                        0.0f, _image.cols / 2, _image.rows / 2,
+                        0.0f, 0.0f, 1.0f);
         temp.copyTo(this->K_);
+        this->K_.convertTo(this->K_, 6);
         return true;
     }
 }

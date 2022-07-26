@@ -56,9 +56,13 @@ namespace sfm {
 
         void BuildPointKey();
 
-        int GetEdgeSize();
+        void GetInliers(int index,
+                        std::vector<cv::Point2f> &clean_points1,
+                        std::vector<cv::Point2f> &clean_points2);
 
         void FindTransitiveCorrespondences(int point_key, int camera_key);
+
+        int GetEdgeSize();
 
         int GetBestBeginPair();
 

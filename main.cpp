@@ -119,7 +119,7 @@ int main() {
 
     sfm::CorrespondenceGraph correspondence_graph(cameras);
     std::cout << "Have Finished the correspondence graph build" << std::endl;
-//    sfm::IncrementalRebuild rebuild{edges, points, scene_graph};
-//    rebuild.BeginRebuild();
+    sfm::IncrementalRebuild rebuild(&correspondence_graph);
+    rebuild.BeginRebuild();
     return 0;
 }

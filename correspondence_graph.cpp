@@ -163,4 +163,21 @@ namespace sfm {
         }
         return index;
     }
+
+    void CorrespondenceGraph::GetInliers(int index,
+                                         std::vector<cv::Point2f> &clean_points1,
+                                         std::vector<cv::Point2f> &clean_points2) {
+        auto edge = edges_.at(index);
+        auto point1 = edge->key_points_1_.begin();
+        auto point2 = edge->key_points_2_.begin();
+        for (; point1 != edge->key_points_1_.end() && point2 != edge->key_points_2_.end(); point2++, point1++) {
+            cv::Mat temp_point2 = (cv::Mat_<double>(3, 1) << point2->x, point2->y, 1.0f);
+            cv::Mat temp_point1 = (cv::Mat_<double>(3, 1) << point1->x, point1->y, 1.0f);
+            cv::Mat check = temp_point2.t() * edge->f_m_ * temp_point1;
+            if (check.at<double>(0, 0) <= FUNDAMENTAL_INLIER_THRESHOLD) {
+                clean_points1.emplace_back(point1->x, point1->y);
+                clean_points2.emplace_back(point2->x, point2->y);
+            }
+        }
+    }
 }

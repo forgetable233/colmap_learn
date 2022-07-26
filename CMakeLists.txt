@@ -18,7 +18,7 @@ add_executable(test main.cpp
         edge.cpp edge.h
         incremental_rebuild.cpp incremental_rebuild.h
         correspondence_graph.cpp correspondence_graph.h
-        point3d.cpp point3d.h)
+        point3d.cpp point3d.h point_viewer.cpp point_viewer.h)
 
 target_link_libraries(test PRIVATE Eigen3::Eigen  ${OpenCV_LIBS} ${PCL_LIBRARIES})
 

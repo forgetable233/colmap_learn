@@ -49,6 +49,11 @@ namespace sfm {
 
         void ShowMatchResult(int begin_index);
 
+        void CheckZDepth(const std::shared_ptr<CameraModel>& camera1,
+                         const std::shared_ptr<CameraModel>& camera2,
+                         std::vector<Eigen::Vector3d> &world_points,
+                         cv::Mat &pst_4d);
+
         void CleanOutliers(int index,
                            std::vector<cv::Point2f> &clean_points_1,
                            std::vector<cv::Point2f> &clean_points_2);
