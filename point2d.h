@@ -50,6 +50,8 @@ namespace sfm {
 
         bool AddCorrPoint(int image_id, int point_id);
 
+        bool HasRegistered();
+
         int GetCorrNumber();
 
         int ComputePointKey(int camera, int index);
@@ -57,6 +59,9 @@ namespace sfm {
         std::shared_ptr<int []> GetCorrs();
 
         void AddWorldPoints(std::shared_ptr<Point3d> point_ptr);
+
+        void AddRelatedPoint(std::vector<cv::Point3f> &world_points,
+                             std::vector<cv::Point2f> &image_points);
 
         ~Point2d();
     };

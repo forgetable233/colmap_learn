@@ -10,6 +10,8 @@
 #include <unordered_map>
 
 #include <Eigen/Core>
+#include <opencv2/core.hpp>
+#include <opencv2/opencv.hpp>
 namespace sfm {
     class Point3d {
     private:
@@ -23,6 +25,8 @@ namespace sfm {
         Point3d(int key, Eigen::Vector3d _point);
 
         Point3d(Eigen::Vector3d _point);
+
+        void AddRelatedPoint(std::vector<cv::Point3f> &world_points);
 
         Eigen::Vector3d GetPoint();
 

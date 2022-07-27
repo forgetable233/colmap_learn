@@ -61,4 +61,17 @@ namespace sfm {
         }
         return corrs;
     }
+
+    bool Point2d::HasRegistered() {
+        return this->registered;
+    }
+
+    void Point2d::AddRelatedPoint(std::vector<cv::Point3f> &world_points,
+                                  std::vector<cv::Point2f> &image_points) {
+        if (world_point_ == nullptr) {
+            std::cerr << "The pointer of the world point is nullptr" << std::endl;
+        }
+        world_point_->AddRelatedPoint(world_points);
+        image_points.emplace_back(pixel_point_.x(), pixel_point_.y());
+    }
 }

@@ -25,7 +25,7 @@ namespace sfm {
 
     class CorrespondenceGraph {
     private:
-        // 保存每一张图片的相关性，用来选择最佳起始图片
+        // 保存每一张图片的相关性，用来选择最佳起始图片，同时确定图片是否已经注册过
         struct Image {
             explicit Image(unsigned int _corr) : correspondence_number(_corr) {}
 
@@ -44,7 +44,7 @@ namespace sfm {
 
         std::unordered_map<int, Image> images_;
 
-        std::unordered_map<int, int> scene_graph_;
+        std::unordered_multimap<int, int> scene_graph_;
     public:
         CorrespondenceGraph() = default;
 
@@ -66,13 +66,15 @@ namespace sfm {
 
         int GetEdgeSize();
 
-        int GetBestBeginPair();
+        int GetBestBeginPair(int &second_max);
 
-        int GetNextBestPair();
+        int GetBestNextPair(int new_camera,int last_camera_, int last_max);
 
         std::shared_ptr<CameraModel> GetCameraModel(int index, CameraChoice choice);
 
         std::shared_ptr<Edge> GetEdge(int index);
+
+        std::unordered_map<int, std::shared_ptr<Edge>> &GetEdges();
 
         static inline int ComputePointKey(int camera_key, int point_index);
 
@@ -81,6 +83,16 @@ namespace sfm {
         int ComputeWorldPointKey(int camera1, int camera2, int index);
 
         void AddWorldPoints(int camera1, int camera2, int index, std::shared_ptr<Point3d> point_ptr);
+
+        bool GetRelatedPoints(int camera_key,
+                              std::vector<cv::Point3f> &world_points,
+                              std::vector<cv::Point2f> &image_points);
+
+        void SetImageRegistered(int index);
+
+        bool ImageHaveRegistered(int index);
+
+        void SetPairJoined(int index);
     };
 }
 

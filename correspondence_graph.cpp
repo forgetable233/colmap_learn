@@ -111,15 +111,17 @@ namespace sfm {
         return this->edges_.size();
     }
 
-    int CorrespondenceGraph::GetBestBeginPair() {
+    int CorrespondenceGraph::GetBestBeginPair(int &second_max) {
         int index = 0;
         unsigned max = 0;
+        second_max = max;
         for (const auto &edge: edges_) {
             int camera1 = edge.first / 100;
             int camera2 = edge.first % 100;
             unsigned int local_max =
                     images_.at(camera1).correspondence_number + images_.at(camera2).correspondence_number;
             if (local_max > max) {
+                second_max = max;
                 max = local_max;
                 index = edge.first;
             }
@@ -140,24 +142,28 @@ namespace sfm {
         return this->edges_[index];
     }
 
-    // 目前这里先不写场景图的增强，先写个找下一个最大覆盖的
-    int CorrespondenceGraph::GetNextBestPair() {
+    /**
+     * 目前这里先不写场景图的增强，先写个找下一个最大覆盖的
+     * 这里先不用了，毕竟是穷举，可以只写一个按照序列加入edge
+     * @param new_camera 选择出的下一个选出的照片
+     * @param last_camera 上一次加入优化的图片
+     * @param last_max 上一次计算出的待定加入的最大值
+     * @return
+     */
+    int CorrespondenceGraph::GetBestNextPair(int new_camera, int last_camera, int last_max) {
         if (joined_number_ == edges_.size()) {
             return -1;
         }
         joined_number_++;
         int index = -1;
         int max = -1;
-        for (const auto &edge: edges_) {
-            if (!edge.second->joined) {
-                int camera1 = edge.first / 100;
-                int camera2 = edge.first % 100;
-                unsigned int local_max =
-                        images_.at(camera1).correspondence_number + images_.at(camera2).correspondence_number;
-                if (local_max > max) {
-                    max = local_max;
-                    index = edge.first;
-                }
+        auto connect_images = scene_graph_.equal_range(last_camera);
+        for (auto begin = connect_images.first; begin != connect_images.second; begin++) {
+            int local_max =
+                    images_.at(last_camera).correspondence_number + images_.at(begin->second).correspondence_number;
+            if (local_max > last_max) {
+                new_camera = begin->second;
+                last_max = local_max;
             }
         }
         return index;
@@ -175,15 +181,18 @@ namespace sfm {
         auto edge = edges_.at(index);
         auto point1 = edge->key_points_1_.begin();
         auto point2 = edge->key_points_2_.begin();
+        int sum = 0;
         for (; point1 != edge->key_points_1_.end() && point2 != edge->key_points_2_.end(); point2++, point1++) {
             cv::Mat temp_point2 = (cv::Mat_<double>(3, 1) << point2->x, point2->y, 1.0f);
             cv::Mat temp_point1 = (cv::Mat_<double>(3, 1) << point1->x, point1->y, 1.0f);
             cv::Mat check = temp_point2.t() * edge->f_m_ * temp_point1;
             if (check.at<double>(0, 0) <= FUNDAMENTAL_INLIER_THRESHOLD) {
+                sum++;
                 clean_points1.emplace_back(point1->x, point1->y);
                 clean_points2.emplace_back(point2->x, point2->y);
             }
         }
+        std::cout << "The initial inliers is " << sum << std::endl;
     }
 
     /**
@@ -236,5 +245,35 @@ namespace sfm {
                 points_.at(corrs[i])->AddWorldPoints(point_ptr);
             }
         }
+    }
+
+    void CorrespondenceGraph::SetPairJoined(int index) {
+        this->edges_[index]->joined = true;
+    }
+
+    std::unordered_map<int, std::shared_ptr<Edge>> &CorrespondenceGraph::GetEdges() {
+        return edges_;
+    }
+
+    void CorrespondenceGraph::SetImageRegistered(int index) {
+        images_.at(index).registered = true;
+    }
+
+    bool CorrespondenceGraph::ImageHaveRegistered(int index) {
+        return images_.at(index).registered;
+    }
+
+    bool CorrespondenceGraph::GetRelatedPoints(int camera_key,
+                                               std::vector<cv::Point3f> &world_points,
+                                               std::vector<cv::Point2f> &image_points) {
+        std::cout << points_.size() << std::endl;
+        for (const auto &point: points_) {
+            if (point.first / 10000 == camera_key) {
+                if (point.second->HasRegistered()) {
+                    point.second->AddRelatedPoint(world_points, image_points);
+                }
+            }
+        }
+        return false;
     }
 }

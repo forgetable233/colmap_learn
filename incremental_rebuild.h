@@ -29,6 +29,7 @@ namespace sfm {
     enum TrianguleType {
         kInitial = 0,
         kNormal = 1,
+        kMultiView = 2
     };
     class IncrementalRebuild {
     private:
@@ -46,13 +47,17 @@ namespace sfm {
 
         void Triangulation(int index, TrianguleType type);
 
-        static void PixToCam(cv::Mat &K, std::vector<cv::Point2f> &input_points, std::vector<cv::Point2f> &output_points);
+        static void PixToCam(cv::Mat &K,
+                             std::vector<cv::Point2f> &input_points,
+                             std::vector<cv::Point2f> &output_points);
 
         void BA();
 
         void BeginRebuild();
 
         void ViewAllPoints();
+
+        void RegisterImage(Eigen::Matrix3d &R, Eigen::Vector3d &t, int edge_key);
 
         void ShowMatchResult(int begin_index);
 
@@ -64,7 +69,7 @@ namespace sfm {
                            std::vector<cv::Point2f> &clean_points_1,
                            std::vector<cv::Point2f> &clean_points_2);
 
-        int GetBestBeginEdge();
+        int GetBestBeginEdge(int &second_max);
 
         int GetNextBestEdge(const std::shared_ptr<bool[]>& used_list,
                             const std::shared_ptr<bool[]>& joined_list,
