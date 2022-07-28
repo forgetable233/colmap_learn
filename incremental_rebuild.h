@@ -36,6 +36,8 @@ namespace sfm {
         std::shared_ptr<CorrespondenceGraph> scene_graph_;
 
         std::unordered_map<int, std::shared_ptr<Point3d>> world_points_;
+
+        std::vector<int> joined_images_;
     public:
         IncrementalRebuild() = default;
 
@@ -57,7 +59,7 @@ namespace sfm {
 
         void ViewAllPoints();
 
-        void RegisterImage(Eigen::Matrix3d &R, Eigen::Vector3d &t, int edge_key);
+        void RegisterImage(Eigen::Matrix3d &R, Eigen::Vector3d &t, int camera_key);
 
         void ShowMatchResult(int begin_index);
 
@@ -65,16 +67,16 @@ namespace sfm {
                                           const std::shared_ptr<CameraModel>& camera2,
                                           cv::Mat &pst_4d);
 
+        void ComputeScore(int camera_key);
+
         void CleanOutliers(int index,
                            std::vector<cv::Point2f> &clean_points_1,
                            std::vector<cv::Point2f> &clean_points_2);
 
         int GetBestBeginEdge(int &second_max);
 
-        int GetNextBestEdge(const std::shared_ptr<bool[]>& used_list,
-                            const std::shared_ptr<bool[]>& joined_list,
-                            const std::shared_ptr<std::vector<int>>& index_list,
-                            int last_edge_index);
+        // 直接从一张图片开始进行的穷举
+        int GetNextBestEdge();
 
         int ComputeWorldPointKey();
     };

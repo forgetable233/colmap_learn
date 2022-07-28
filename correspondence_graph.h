@@ -29,21 +29,27 @@ namespace sfm {
         struct Image {
             explicit Image(unsigned int _corr) : correspondence_number(_corr) {}
 
+            int key;
+
             unsigned int correspondence_number = 0;
+
+            unsigned int score = 0;
 
             bool registered = false;
         };
+        /** 保存当前加入的图片的数量 **/
+        int joined_number_ = 2;
 
-        // 此处为对所有的点构建对应的key，以方便进行查找
-        // 此处的key为由camera_id与point_id共同组成
-        int joined_number_ = 0;
-
+        /** 对每一个点信息的保存，此处有一层封装 **/
         std::unordered_map<int, std::shared_ptr<Point2d>> points_;
 
+        /** 对每一个edge的保存，此处的edge的key是经过自定以的 **/
         std::unordered_map<int, std::shared_ptr<Edge>> edges_;
 
+        /** 对每一张图片的定义，此处的key是对应初始化时相机的key **/
         std::unordered_map<int, Image> images_;
 
+        /** 可能以后会有用的一个场景图 **/
         std::unordered_multimap<int, int> scene_graph_;
     public:
         CorrespondenceGraph() = default;
@@ -64,13 +70,17 @@ namespace sfm {
 
         void FindTransitiveCorrespondences(int point_key, int camera_key);
 
+        void ComputeScore(int camera_key);
+
         int GetEdgeSize();
 
         int GetBestBeginPair(int &second_max);
 
-        int GetBestNextPair(int new_camera,int last_camera_, int last_max);
+        int GetBestNextImage();
 
-        std::shared_ptr<CameraModel> GetCameraModel(int index, CameraChoice choice);
+        std::shared_ptr<CameraModel> GetCameraModel(int edge_key, CameraChoice choice);
+
+        std::shared_ptr<CameraModel> GetCameraModel(int camera_key);
 
         std::shared_ptr<Edge> GetEdge(int index);
 
@@ -82,7 +92,9 @@ namespace sfm {
 
         int ComputeWorldPointKey(int camera1, int camera2, int index);
 
-        void AddWorldPoints(int camera1, int camera2, int index, std::shared_ptr<Point3d> point_ptr);
+        void AddWorldPoints(int camera1, int camera2, int index, const std::shared_ptr<Point3d>& point_ptr);
+
+        void RebuildPointRelation(int point_key);
 
         bool GetRelatedPoints(int camera_key,
                               std::vector<cv::Point3f> &world_points,

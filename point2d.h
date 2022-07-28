@@ -54,9 +54,9 @@ namespace sfm {
 
         int GetCorrNumber();
 
-        int ComputePointKey(int camera, int index);
+        static inline int ComputePointKey(int camera, int index);
 
-        std::shared_ptr<int []> GetCorrs();
+        void GetCorrs(std::shared_ptr<int []> &corrs);
 
         void AddWorldPoints(std::shared_ptr<Point3d> point_ptr);
 

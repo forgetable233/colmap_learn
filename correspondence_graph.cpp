@@ -31,7 +31,7 @@ namespace sfm {
     }
 
     inline int CorrespondenceGraph::ComputePointKey(int camera_key, int point_index) {
-        return camera_key * 10000 + point_index;
+        int temp = sfm::Point2d::ComputePointKey(camera_key, point_index);
     }
 
     inline int CorrespondenceGraph::ComputeEdgeKey(int camera1, int camera2) {
@@ -84,11 +84,8 @@ namespace sfm {
                             << edge.second->key_points_1_[match.queryIdx].x, edge.second->key_points_1_[match.queryIdx].y;
                     std::shared_ptr<Point2d> temp = std::make_shared<Point2d>(match.queryIdx, temp_point);
                     points_.insert(std::pair<int, std::shared_ptr<Point2d>>(point_key1, temp));
-
                 }
-                if (points_.at(point_key1)->AddCorrPoint(camera2, match.trainIdx)) {
-                    images_.at(camera1).correspondence_number++;
-                }
+                points_.at(point_key1)->AddCorrPoint(camera2, match.trainIdx);
                 if (points_.find(point_key2) == points_.end()) {
                     Eigen::Vector2d temp_point;
                     temp_point
@@ -96,9 +93,7 @@ namespace sfm {
                     std::shared_ptr<Point2d> temp = std::make_shared<Point2d>(match.trainIdx, temp_point);
                     points_.insert(std::pair<int, std::shared_ptr<Point2d>>(point_key2, temp));
                 }
-                if (points_.at(point_key2)->AddCorrPoint(camera1, match.queryIdx)) {
-                    images_.at(camera2).correspondence_number++;
-                }
+                points_.at(point_key2)->AddCorrPoint(camera1, match.queryIdx);
             }
         }
     }
@@ -130,11 +125,11 @@ namespace sfm {
         return index;
     }
 
-    std::shared_ptr<CameraModel> CorrespondenceGraph::GetCameraModel(int index, CameraChoice choice) {
+    std::shared_ptr<CameraModel> CorrespondenceGraph::GetCameraModel(int edge_key, CameraChoice choice) {
         if (choice == CameraChoice::kCamera1) {
-            return this->edges_[index]->camera1_;
+            return this->edges_[edge_key]->camera1_;
         } else {
-            return this->edges_[index]->camera2_;
+            return this->edges_[edge_key]->camera2_;
         }
     }
 
@@ -150,20 +145,17 @@ namespace sfm {
      * @param last_max 上一次计算出的待定加入的最大值
      * @return
      */
-    int CorrespondenceGraph::GetBestNextPair(int new_camera, int last_camera, int last_max) {
-        if (joined_number_ == edges_.size()) {
+    int CorrespondenceGraph::GetBestNextImage() {
+        if (joined_number_ == IMAGE_NUMBER) {
             return -1;
         }
         joined_number_++;
+        int max_score = 0;
         int index = -1;
-        int max = -1;
-        auto connect_images = scene_graph_.equal_range(last_camera);
-        for (auto begin = connect_images.first; begin != connect_images.second; begin++) {
-            int local_max =
-                    images_.at(last_camera).correspondence_number + images_.at(begin->second).correspondence_number;
-            if (local_max > last_max) {
-                new_camera = begin->second;
-                last_max = local_max;
+        for (const auto &image: images_) {
+            if (image.second.score > max_score) {
+                max_score = image.second.score;
+                index = image.first;
             }
         }
         return index;
@@ -221,30 +213,37 @@ namespace sfm {
      * @param index
      * @param point_ptr
      */
-    void CorrespondenceGraph::AddWorldPoints(int camera1, int camera2, int index, std::shared_ptr<Point3d> point_ptr) {
+    void CorrespondenceGraph::AddWorldPoints(int camera1, int camera2, int index, const std::shared_ptr<Point3d>& point_ptr) {
         int camera_key = ComputeEdgeKey(camera1, camera2);
         int point_key1 = ComputePointKey(camera1, edges_.at(camera_key)->matches_[index].queryIdx);
         int point_key2 = ComputePointKey(camera2, edges_.at(camera_key)->matches_[index].trainIdx);
+        int size1 = points_.at(point_key1)->GetCorrNumber();
+        int size2 = points_.at(point_key2)->GetCorrNumber();
         if (points_.at(point_key1)->GetCorrNumber() != points_.at(point_key2)->GetCorrNumber()) {
             std::cerr << "The size of two corr is not equal" << std::endl;
             std::cerr << "There are outliers in the match" << std::endl;
             std::cerr << points_.at(point_key1)->GetCorrNumber() << ' ' << points_.at(point_key2)->GetCorrNumber()
                       << std::endl << std::endl;
         }
-        points_.at(point_key1)->AddWorldPoints(point_ptr);
-        int size = points_.at(point_key1)->GetCorrNumber();
-        if (size != 0) {
-            auto corrs = points_.at(point_key1)->GetCorrs();
-            std::cout << size << std::endl;
-            for (int i = 0; i < size; ++i) {
-                std::cout << corrs[i] << ' ';
-            }
-            std::cout << std::endl;
-            for (int i = 0; i < size; ++i) {
-                std::cout << "The id of the corr is " << corrs[i] << std::endl;
-                points_.at(corrs[i])->AddWorldPoints(point_ptr);
-            }
+        if (size1 == 0 || size2 == 0) {
+            std::cerr << "The size is zero" << std::endl;
         }
+        points_.at(point_key1)->AddWorldPoints(point_ptr);
+        std::shared_ptr<int[]> corrs1(new int[size1]);
+        std::shared_ptr<int[]> corrs2(new int [size2]);
+        points_.at(point_key1)->GetCorrs(corrs1);
+        points_.at(point_key2)->GetCorrs(corrs2);
+        for (int i = 0; i < size1; ++i) {
+            std::cout << corrs1[i] << ' ' ;
+            points_.at(corrs1[i])->AddWorldPoints(point_ptr);
+        }
+        for (int i = 0; i < size2; ++i) {
+            points_.at(corrs2[i])->AddWorldPoints(point_ptr);
+        }
+    }
+
+    void CorrespondenceGraph::RebuildPointRelation(int point_key) {
+
     }
 
     void CorrespondenceGraph::SetPairJoined(int index) {
@@ -275,5 +274,28 @@ namespace sfm {
             }
         }
         return false;
+    }
+
+    void CorrespondenceGraph::ComputeScore(int camera_key) {
+        for (auto &image: images_) {
+            if (image.first != camera_key) {
+                int key = ComputeEdgeKey(image.first, camera_key);
+                image.second.score += edges_.at(key)->matches_.size();
+            }
+        }
+    }
+
+    std::shared_ptr<CameraModel> CorrespondenceGraph::GetCameraModel(int camera_key) {
+        for (const auto &image: images_) {
+            if (image.first != camera_key) {
+                int key = ComputeEdgeKey(image.first, camera_key);
+                if (camera_key == key / 100) {
+                    return edges_.at(key)->camera1_;
+                } else {
+                    return edges_.at(key)->camera2_;
+                }
+            }
+        }
+        return nullptr;
     }
 }

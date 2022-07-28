@@ -13,44 +13,26 @@ namespace sfm {
     void IncrementalRebuild::BeginRebuild() {
         int max = 0;
         int second_max = 0;
-        int current_pair = this->GetBestBeginEdge(second_max);
-        int last_pair = current_pair;
+        int begin_pair = this->GetBestBeginEdge(second_max);
+        int next_image;
 
         std::shared_ptr<CameraModel> camera1;
         std::shared_ptr<CameraModel> camera2;
 
         std::shared_ptr<std::vector<cv::Point3f>> world_point = std::make_shared<std::vector<cv::Point3f>>();
 
-        if (Init(current_pair)) {
+        if (Init(begin_pair)) {
             std::cout << "Have finished the initialize" << std::endl;
 //            ViewAllPoints();
         } else {
             std::cerr << "Error occurred unable to initialize" << std::endl;
         }
-        /*while ((current_pair = scene_graph_->GetBestNextPair()) != -1) {
-            last_pair = current_pair;
-            auto next_best_edge = scene_graph_->GetEdge(current_pair);
-        }*/
-        auto edges = scene_graph_->GetEdges();
-        for (const auto &edge: edges) {
-            if (!edge.second->joined) {
-                Eigen::Matrix3d R;
-                Eigen::Vector3d t;
-                RegisterImage(R, t, edge.second->key_);
-//                Triangulation(edge.second->key_, kNormal);
-            }
+        while ((next_image = scene_graph_->GetBestNextImage()) != -1) {
+            Eigen::Matrix3d R;
+            Eigen::Vector3d t;
+            RegisterImage(R, t, next_image);
         }
         std::cout << "Have finished the rebuild" << std::endl;
-    }
-
-    int
-    IncrementalRebuild::GetNextBestEdge(const std::shared_ptr<bool[]> &used_list,
-                                        const std::shared_ptr<bool[]> &joined_list,
-                                        const std::shared_ptr<std::vector<int>> &index_list,
-                                        int last_edge_index) {
-        /** 这里需要进行场景图的增强操作，待定目前先用个简单的方法进行搜索 **/
-        return -1;
-//        return scene_graph_->GetBestNextPair();
     }
 
     int IncrementalRebuild::GetBestBeginEdge(int &second_max) {
@@ -94,6 +76,10 @@ namespace sfm {
             camera2->SetCameraPose(edge->R_, edge->t_);
             scene_graph_->SetImageRegistered(camera1->key_);
             scene_graph_->SetImageRegistered(camera2->key_);
+            joined_images_.push_back(camera2->key_);
+            joined_images_.push_back(camera1->key_);
+            ComputeScore(camera1->key_);
+            ComputeScore(camera2->key_);
             /** 坐标系没有发生变化 **/
             camera1->T_.at<double>(0, 0) = 1.0f;
             camera1->T_.at<double>(1, 1) = 1.0f;
@@ -200,28 +186,25 @@ namespace sfm {
      * 使用PnP算法计算出对应图像的世界坐标位置（这里预计会用自己写的方法计算一下）
      * @param R
      * @param t
-     * @param edge_key
+     * @param camera_key
      */
-    void IncrementalRebuild::RegisterImage(Eigen::Matrix3d &R, Eigen::Vector3d &t, int edge_key) {
-        auto camera1 = scene_graph_->GetCameraModel(edge_key, CameraChoice::kCamera1);
-        auto camera2 = scene_graph_->GetCameraModel(edge_key, CameraChoice::kCamera2);
-        auto edge = scene_graph_->GetEdge(edge_key);
-        cv::Mat R_;
-        cv::Mat t_;
-        cv::Mat dist_coeff = (cv::Mat_<double>(1, 5) << 0, 0, 0, 0, 0);
-        std::vector<cv::Point3f> world_points;
-        std::vector<cv::Point2f> image_points;
-        if (scene_graph_->ImageHaveRegistered(camera1->key_)) {
-            // 确定是第二张图片没有注册进去，随后计算得到所有的对应以及完成三角化的点
-            scene_graph_->GetRelatedPoints(camera2->key_, world_points, image_points);
-        } else if (scene_graph_->ImageHaveRegistered(camera2->key_)){
-            scene_graph_->GetRelatedPoints(camera1->key_, world_points, image_points);
+    void IncrementalRebuild::RegisterImage(Eigen::Matrix3d &R, Eigen::Vector3d &t, int camera_key) {
+        auto camera = scene_graph_->GetCameraModel(camera_key);
+        if (camera != nullptr) {
+            cv::Mat R_;
+            cv::Mat t_;
+            cv::Mat dist_coeff = (cv::Mat_<double>(1, 5) << 0, 0, 0, 0, 0);
+            std::vector<cv::Point3f> world_points;
+            std::vector<cv::Point2f> image_points;
+            std::cout << world_points.size() << ' ' << image_points.size() << std::endl;
+            cv::solvePnPRansac(world_points, image_points, camera->K_, dist_coeff, R_, t_);
+            std::cout << R_ << std::endl << t_ << std::endl << std::endl;
         } else {
-            std::cerr << "all the images in this has not been registered" << std::endl;
-            return;
+            std::cerr << "Can not find the related pair" << std::endl;
         }
-        std::cout << world_points.size() << ' ' << image_points.size() << std::endl;
-        cv::solvePnPRansac(world_points, image_points, camera2->K_, dist_coeff, R_, t_);
-        std::cout << R_ << std::endl << t_ << std::endl << std::endl;
+    }
+
+    void IncrementalRebuild::ComputeScore(int camera_key) {
+        scene_graph_->ComputeScore(camera_key);
     }
 }
