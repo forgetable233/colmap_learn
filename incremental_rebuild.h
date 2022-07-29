@@ -76,13 +76,9 @@ namespace sfm {
                            std::vector<cv::Point2f> &clean_points_2);
 
         void GetUnregisteredPoints(int old_camera_key, int new_camera_key,
-                                   std::vector<std::vector<Eigen::Vector2d>> &new_iamge_pixel_points,
-                                   std::vector<std::vector<Eigen::Vector2d>> &old_iamge_pixel_points);
+                                   std::unordered_map<int, std::vector<int>> &points);
 
         int GetBestBeginEdge(int &second_max);
-
-        // 直接从一张图片开始进行的穷举
-        int GetNextBestEdge();
 
         int ComputeWorldPointKey();
     };

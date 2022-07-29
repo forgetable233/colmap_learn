@@ -110,7 +110,7 @@ namespace sfm {
             scene_graph_->SetPairJoined(index);
             /** 针对完成三角化的点进行索引的构建 **/
         } else if (type == kNormal) {
-            if (scene_graph_->ImageHaveRegistered(camera1->key_)) {
+            if (scene_graph_->ImageHasRegistered(camera1->key_)) {
                 // 确定第一张图片没有加入进去
             } else {
 
@@ -218,37 +218,46 @@ namespace sfm {
     }
 
     void IncrementalRebuild::MultiViewTriangulation(int camera_key) {
-        std::vector<std::vector<Eigen::Vector2d>> new_image_pixel_points;
-        std::vector<std::vector<Eigen::Vector2d>> old_image_pixel_points;
+        std::unordered_map<int, std::vector<int>> new_image_points;
         std::vector<Eigen::Vector3d> world_points;
         for (const auto &joined_image: joined_images_) {
-            GetUnregisteredPoints(joined_image, camera_key, new_image_pixel_points, old_image_pixel_points);
+            GetUnregisteredPoints(joined_image, camera_key, new_image_points);
+
         }
     }
 
     void IncrementalRebuild::GetUnregisteredPoints(int old_camera_key, int new_camera_key,
-                                                   std::vector<std::vector<Eigen::Vector2d>> &new_iamge_pixel_points,
-                                                   std::vector<std::vector<Eigen::Vector2d>> &old_iamge_pixel_points) {
+                                                   std::unordered_map<int, std::vector<int>> &points) {
         int edge_key = CorrespondenceGraph::ComputeEdgeKey(old_camera_key, new_camera_key);
         const auto edge = scene_graph_->GetEdge(edge_key);
-        std::vector <Eigen::Vector2d> temp_old_points;
-        std::vector <Eigen::Vector2d> temp_new_points;
+        std::vector<Eigen::Vector2d> temp_old_points;
+        std::vector<Eigen::Vector2d> temp_new_points;
         if (edge->key_ / 100 == old_camera_key) {
             for (const auto &match: edge->matches_) {
-                temp_old_points.emplace_back(edge->key_points_1_[match.queryIdx].x,
-                                             edge->key_points_1_[match.queryIdx].y);
-                temp_new_points.emplace_back(edge->key_points_1_[match.trainIdx].x,
-                                             edge->key_points_1_[match.trainIdx].y);
+                int new_point_key = CorrespondenceGraph::ComputePointKey(new_camera_key, match.trainIdx);
+                int old_point_key = CorrespondenceGraph::ComputePointKey(old_camera_key, match.queryIdx);
+                if (!scene_graph_->PointHasRegistered(new_point_key) &&
+                    !scene_graph_->PointHasRegistered(old_camera_key)) {
+                    if (points.find(new_point_key) == points.end()) {
+                        std::vector<int> temp;
+                        points.insert(std::pair<int, std::vector<int>>(new_point_key, temp));
+                    }
+                    points.at(new_point_key).push_back(old_point_key);
+                }
             }
         } else {
             for (const auto &match: edge->matches_) {
-                temp_old_points.emplace_back(edge->key_points_1_[match.trainIdx].x,
-                                             edge->key_points_1_[match.trainIdx].y);
-                temp_new_points.emplace_back(edge->key_points_1_[match.queryIdx].x,
-                                             edge->key_points_1_[match.queryIdx].y);
+                int new_point_key = CorrespondenceGraph::ComputePointKey(new_camera_key, match.queryIdx);
+                int old_point_key = CorrespondenceGraph::ComputePointKey(old_camera_key, match.trainIdx);
+                if (!scene_graph_->PointHasRegistered(new_point_key) &&
+                    !scene_graph_->PointHasRegistered(old_camera_key)) {
+                    if (points.find(new_point_key) == points.end()) {
+                        std::vector<int> temp;
+                        points.insert(std::pair<int, std::vector<int>>(new_point_key, temp));
+                    }
+                    points.at(new_point_key).push_back(old_point_key);
+                }
             }
         }
-        new_iamge_pixel_points.push_back(temp_new_points);
-        old_iamge_pixel_points.push_back(temp_old_points);
     }
 }

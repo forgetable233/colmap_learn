@@ -268,7 +268,7 @@ namespace sfm {
         images_.at(index).registered = true;
     }
 
-    bool CorrespondenceGraph::ImageHaveRegistered(int index) {
+    bool CorrespondenceGraph::ImageHasRegistered(int index) {
         return images_.at(index).registered;
     }
 
@@ -311,5 +311,9 @@ namespace sfm {
             }
         }
         return nullptr;
+    }
+
+    bool CorrespondenceGraph::PointHasRegistered(int point_key) {
+        return points_.at(point_key)->HasRegistered();
     }
 }

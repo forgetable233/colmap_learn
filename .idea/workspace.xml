@@ -22,7 +22,6 @@
   <component name="ChangeListManager">
     <list default="true" id="00e7edfa-187b-4a21-9a73-3aca43181e93" name="变更" comment="变更">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/camera_model.h" beforeDir="false" afterPath="$PROJECT_DIR$/camera_model.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/correspondence_graph.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/correspondence_graph.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/correspondence_graph.h" beforeDir="false" afterPath="$PROJECT_DIR$/correspondence_graph.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/incremental_rebuild.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/incremental_rebuild.cpp" afterDir="false" />
@@ -132,7 +131,7 @@
       <workItem from="1658996012633" duration="16624000" />
       <workItem from="1659070989692" duration="199000" />
       <workItem from="1659071194487" duration="241000" />
-      <workItem from="1659076276766" duration="9236000" />
+      <workItem from="1659076276766" duration="15469000" />
     </task>
     <servers />
   </component>

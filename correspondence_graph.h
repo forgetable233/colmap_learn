@@ -96,13 +96,16 @@ namespace sfm {
 
         void RebuildPointRelation(int point_key);
 
+        void SetImageRegistered(int index);
+
+
         bool GetRelatedPoints(int camera_key,
                               std::vector<cv::Point3f> &world_points,
                               std::vector<cv::Point2f> &image_points);
 
-        void SetImageRegistered(int index);
+        bool ImageHasRegistered(int index);
 
-        bool ImageHaveRegistered(int index);
+        bool PointHasRegistered(int point_key);
 
         void SetPairJoined(int index);
     };
