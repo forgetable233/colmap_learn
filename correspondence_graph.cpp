@@ -10,13 +10,14 @@ namespace sfm {
     CorrespondenceGraph::CorrespondenceGraph(std::vector<std::shared_ptr<CameraModel>> &cameras) {
         for (int i = 0; i < IMAGE_NUMBER; ++i) {
             for (int j = i + 1; j < IMAGE_NUMBER; ++j) {
-                if (i == j) {
+                if (cameras[i]->key_ == cameras[j]->key_) {
                     continue;
                 }
-                int key = ComputeEdgeKey(i, j);
+                int key = ComputeEdgeKey(cameras[i]->key_, cameras[j]->key_);
                 scene_graph_.insert(std::pair<int, int>(key / 100, key % 100));
                 edges_.insert(std::pair<int, std::shared_ptr<Edge>>
                                       (key, std::make_shared<Edge>(cameras[i], cameras[j])));
+                edges_.at(key)->key_ = key;
             }
         }
         std::cout << "Have found " << edges_.size() << "edges" << std::endl;
@@ -135,7 +136,11 @@ namespace sfm {
     }
 
     std::shared_ptr<Edge> CorrespondenceGraph::GetEdge(int index) {
-        return this->edges_[index];
+        if (edges_.find(index) == edges_.end()) {
+            std::cerr << "Unable to find the target edge" << std::endl;
+            std::cerr << "OUT OF RANGE" << std::endl;
+        }
+        return this->edges_.at(index);
     }
 
     /**

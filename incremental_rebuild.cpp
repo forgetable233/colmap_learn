@@ -11,13 +11,9 @@ namespace sfm {
     }
 
     void IncrementalRebuild::BeginRebuild() {
-        int max = 0;
         int second_max = 0;
         int begin_pair = this->GetBestBeginEdge(second_max);
         int next_image;
-
-        std::shared_ptr<CameraModel> camera1;
-        std::shared_ptr<CameraModel> camera2;
 
         std::shared_ptr<std::vector<cv::Point3f>> world_point = std::make_shared<std::vector<cv::Point3f>>();
 
@@ -28,10 +24,12 @@ namespace sfm {
             std::cerr << "Error occurred unable to initialize" << std::endl;
         }
         while ((next_image = scene_graph_->GetBestNextImage()) != -1) {
+            auto camera = scene_graph_->GetCameraModel(next_image);
+            joined_images_.push_back(next_image);
             Eigen::Matrix3d R;
             Eigen::Vector3d t;
             RegisterImage(R, t, next_image);
-
+            MultiViewTriangulation(next_image);
             scene_graph_->SetImageRegistered(next_image);
         }
         std::cout << "Have finished the rebuild" << std::endl;
@@ -42,7 +40,7 @@ namespace sfm {
     }
 
     bool IncrementalRebuild::Init(int index) {
-        this->Triangulation(index, kInitial);
+        this->SingulViewTriangulation(index, kInitial);
         return true;
     }
 
@@ -64,7 +62,7 @@ namespace sfm {
         }
     }
 
-    void IncrementalRebuild::Triangulation(int index, TrianguleType type) {
+    void IncrementalRebuild::SingulViewTriangulation(int index, TrianguleType type) {
         auto camera1 = scene_graph_->GetCameraModel(index, CameraChoice::kCamera1);
         auto camera2 = scene_graph_->GetCameraModel(index, CameraChoice::kCamera2);
         auto edge = scene_graph_->GetEdge(index);
@@ -200,8 +198,13 @@ namespace sfm {
             std::vector<cv::Point2f> image_points;
             if (scene_graph_->GetRelatedPoints(camera_key, world_points, image_points)) {
                 cv::solvePnPRansac(world_points, image_points, camera->K_, dist_coeff, R_, t_);
-                std::cout << world_points.size() << ' ' << image_points.size() << std::endl;
-                std::cout << R_ << std::endl << t_ << std::endl << std::endl;
+                cv::Mat temp_R;
+                cv::Rodrigues(R_, temp_R);
+                t_.col(0).copyTo(camera->T_.col(3));
+                temp_R.col(0).copyTo(camera->T_.col(0));
+                temp_R.col(1).copyTo(camera->T_.col(1));
+                temp_R.col(2).copyTo(camera->T_.col(2));
+                std::cout << camera->T_ << std::endl;
             } else {
                 std::cerr << "Can not get the related points" << std::endl << std::endl;
             }
@@ -215,6 +218,37 @@ namespace sfm {
     }
 
     void IncrementalRebuild::MultiViewTriangulation(int camera_key) {
+        std::vector<std::vector<Eigen::Vector2d>> new_image_pixel_points;
+        std::vector<std::vector<Eigen::Vector2d>> old_image_pixel_points;
+        std::vector<Eigen::Vector3d> world_points;
+        for (const auto &joined_image: joined_images_) {
+            GetUnregisteredPoints(joined_image, camera_key, new_image_pixel_points, old_image_pixel_points);
+        }
+    }
 
+    void IncrementalRebuild::GetUnregisteredPoints(int old_camera_key, int new_camera_key,
+                                                   std::vector<std::vector<Eigen::Vector2d>> &new_iamge_pixel_points,
+                                                   std::vector<std::vector<Eigen::Vector2d>> &old_iamge_pixel_points) {
+        int edge_key = CorrespondenceGraph::ComputeEdgeKey(old_camera_key, new_camera_key);
+        const auto edge = scene_graph_->GetEdge(edge_key);
+        std::vector <Eigen::Vector2d> temp_old_points;
+        std::vector <Eigen::Vector2d> temp_new_points;
+        if (edge->key_ / 100 == old_camera_key) {
+            for (const auto &match: edge->matches_) {
+                temp_old_points.emplace_back(edge->key_points_1_[match.queryIdx].x,
+                                             edge->key_points_1_[match.queryIdx].y);
+                temp_new_points.emplace_back(edge->key_points_1_[match.trainIdx].x,
+                                             edge->key_points_1_[match.trainIdx].y);
+            }
+        } else {
+            for (const auto &match: edge->matches_) {
+                temp_old_points.emplace_back(edge->key_points_1_[match.trainIdx].x,
+                                             edge->key_points_1_[match.trainIdx].y);
+                temp_new_points.emplace_back(edge->key_points_1_[match.queryIdx].x,
+                                             edge->key_points_1_[match.queryIdx].y);
+            }
+        }
+        new_iamge_pixel_points.push_back(temp_new_points);
+        old_iamge_pixel_points.push_back(temp_old_points);
     }
 }

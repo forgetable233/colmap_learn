@@ -47,7 +47,7 @@ namespace sfm {
 
         bool Init(int index);
 
-        void Triangulation(int index, TrianguleType type);
+        void SingulViewTriangulation(int index, TrianguleType type);
 
         void MultiViewTriangulation(int camera_key);
 
@@ -74,6 +74,10 @@ namespace sfm {
         void CleanOutliers(int index,
                            std::vector<cv::Point2f> &clean_points_1,
                            std::vector<cv::Point2f> &clean_points_2);
+
+        void GetUnregisteredPoints(int old_camera_key, int new_camera_key,
+                                   std::vector<std::vector<Eigen::Vector2d>> &new_iamge_pixel_points,
+                                   std::vector<std::vector<Eigen::Vector2d>> &old_iamge_pixel_points);
 
         int GetBestBeginEdge(int &second_max);
 

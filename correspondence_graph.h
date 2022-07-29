@@ -86,7 +86,7 @@ namespace sfm {
 
         std::unordered_map<int, std::shared_ptr<Edge>> &GetEdges();
 
-        int ComputePointKey(int camera_key, int point_index);
+        static int ComputePointKey(int camera_key, int point_index);
 
         static inline int ComputeEdgeKey(int camera1, int camera2);
 
