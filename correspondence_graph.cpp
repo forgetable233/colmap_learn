@@ -30,8 +30,9 @@ namespace sfm {
         this->scene_graph_ = std::move(_graph->scene_graph_);
     }
 
-    inline int CorrespondenceGraph::ComputePointKey(int camera_key, int point_index) {
+    int CorrespondenceGraph::ComputePointKey(int camera_key, int point_index) {
         int temp = sfm::Point2d::ComputePointKey(camera_key, point_index);
+        return temp;
     }
 
     inline int CorrespondenceGraph::ComputeEdgeKey(int camera1, int camera2) {
@@ -153,9 +154,11 @@ namespace sfm {
         int max_score = 0;
         int index = -1;
         for (const auto &image: images_) {
-            if (image.second.score > max_score) {
-                max_score = image.second.score;
-                index = image.first;
+            if (!image.second.registered) {
+                if (image.second.score > max_score) {
+                    max_score = image.second.score;
+                    index = image.first;
+                }
             }
         }
         return index;
@@ -213,28 +216,30 @@ namespace sfm {
      * @param index
      * @param point_ptr
      */
-    void CorrespondenceGraph::AddWorldPoints(int camera1, int camera2, int index, const std::shared_ptr<Point3d>& point_ptr) {
+    void CorrespondenceGraph::AddWorldPoints(int camera1, int camera2, int index,
+                                             const std::shared_ptr<Point3d> &point_ptr) {
         int camera_key = ComputeEdgeKey(camera1, camera2);
         int point_key1 = ComputePointKey(camera1, edges_.at(camera_key)->matches_[index].queryIdx);
         int point_key2 = ComputePointKey(camera2, edges_.at(camera_key)->matches_[index].trainIdx);
         int size1 = points_.at(point_key1)->GetCorrNumber();
         int size2 = points_.at(point_key2)->GetCorrNumber();
-        if (points_.at(point_key1)->GetCorrNumber() != points_.at(point_key2)->GetCorrNumber()) {
-            std::cerr << "The size of two corr is not equal" << std::endl;
-            std::cerr << "There are outliers in the match" << std::endl;
-            std::cerr << points_.at(point_key1)->GetCorrNumber() << ' ' << points_.at(point_key2)->GetCorrNumber()
-                      << std::endl << std::endl;
-        }
+//        if (points_.at(point_key1)->GetCorrNumber() != points_.at(point_key2)->GetCorrNumber()) {
+//            std::cerr << "The size of two corr is not equal" << std::endl;
+//            std::cerr << "There are outliers in the match" << std::endl;
+//            std::cerr << points_.at(point_key1)->GetCorrNumber() << ' ' << points_.at(point_key2)->GetCorrNumber()
+//                      << std::endl << std::endl;
+//        }
         if (size1 == 0 || size2 == 0) {
             std::cerr << "The size is zero" << std::endl;
         }
         points_.at(point_key1)->AddWorldPoints(point_ptr);
-        std::shared_ptr<int[]> corrs1(new int[size1]);
-        std::shared_ptr<int[]> corrs2(new int [size2]);
+        std::vector<int> corrs1;
+        std::vector<int> corrs2;
+        corrs1.resize(size1);
+        corrs2.resize(size2);
         points_.at(point_key1)->GetCorrs(corrs1);
         points_.at(point_key2)->GetCorrs(corrs2);
         for (int i = 0; i < size1; ++i) {
-            std::cout << corrs1[i] << ' ' ;
             points_.at(corrs1[i])->AddWorldPoints(point_ptr);
         }
         for (int i = 0; i < size2; ++i) {
@@ -265,15 +270,19 @@ namespace sfm {
     bool CorrespondenceGraph::GetRelatedPoints(int camera_key,
                                                std::vector<cv::Point3f> &world_points,
                                                std::vector<cv::Point2f> &image_points) {
-        std::cout << points_.size() << std::endl;
+        int related_number = 0;
         for (const auto &point: points_) {
-            if (point.first / 10000 == camera_key) {
+            if (point.first / 100000 == camera_key) {
                 if (point.second->HasRegistered()) {
                     point.second->AddRelatedPoint(world_points, image_points);
+                    related_number++;
                 }
             }
         }
-        return false;
+        if (related_number == 0) {
+            return false;
+        }
+        return true;
     }
 
     void CorrespondenceGraph::ComputeScore(int camera_key) {

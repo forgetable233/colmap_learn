@@ -31,6 +31,8 @@ namespace sfm {
             Eigen::Matrix3d R;
             Eigen::Vector3d t;
             RegisterImage(R, t, next_image);
+
+            scene_graph_->SetImageRegistered(next_image);
         }
         std::cout << "Have finished the rebuild" << std::endl;
     }
@@ -196,15 +198,23 @@ namespace sfm {
             cv::Mat dist_coeff = (cv::Mat_<double>(1, 5) << 0, 0, 0, 0, 0);
             std::vector<cv::Point3f> world_points;
             std::vector<cv::Point2f> image_points;
-            std::cout << world_points.size() << ' ' << image_points.size() << std::endl;
-            cv::solvePnPRansac(world_points, image_points, camera->K_, dist_coeff, R_, t_);
-            std::cout << R_ << std::endl << t_ << std::endl << std::endl;
+            if (scene_graph_->GetRelatedPoints(camera_key, world_points, image_points)) {
+                cv::solvePnPRansac(world_points, image_points, camera->K_, dist_coeff, R_, t_);
+                std::cout << world_points.size() << ' ' << image_points.size() << std::endl;
+                std::cout << R_ << std::endl << t_ << std::endl << std::endl;
+            } else {
+                std::cerr << "Can not get the related points" << std::endl << std::endl;
+            }
         } else {
-            std::cerr << "Can not find the related pair" << std::endl;
+            std::cerr << "Can not find the related pair" << std::endl << std::endl;
         }
     }
 
     void IncrementalRebuild::ComputeScore(int camera_key) {
         scene_graph_->ComputeScore(camera_key);
+    }
+
+    void IncrementalRebuild::MultiViewTriangulation(int camera_key) {
+
     }
 }

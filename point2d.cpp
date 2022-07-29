@@ -50,16 +50,15 @@ namespace sfm {
         this->world_point_ = point_ptr;
     }
 
-    void Point2d::GetCorrs(std::shared_ptr<int []> &corrs) {
+    void Point2d::GetCorrs(std::vector<int> &corrs) {
         int i = 0;
         for (const auto &corr: correspondence_) {
             corrs[i] = ComputePointKey(corr.first, corr.second);
-            std::cout << corr.first << ' ' << corr.second << ' ' << corrs[i] << std::endl;
+            i++;
         }
-        std::cout << "Finish the corr search" << std::endl;
     }
 
-    bool Point2d::HasRegistered() {
+    bool Point2d::HasRegistered() const {
         return this->registered;
     }
 
