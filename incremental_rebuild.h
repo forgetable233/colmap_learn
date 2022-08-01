@@ -31,6 +31,10 @@ namespace sfm {
         kNormal = 1,
         kMultiView = 2
     };
+    enum MultiViewType {
+        kSVD = 0,
+        kRANSAC = 1
+    };
     class IncrementalRebuild {
     private:
         std::shared_ptr<CorrespondenceGraph> scene_graph_;
@@ -49,7 +53,7 @@ namespace sfm {
 
         void SingulViewTriangulation(int index, TrianguleType type);
 
-        void MultiViewTriangulation(int camera_key);
+        void MultiViewTriangulation(int camera_key, MultiViewType type);
 
         static void PixToCam(cv::Mat &K,
                              std::vector<cv::Point2f> &input_points,

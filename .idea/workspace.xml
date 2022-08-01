@@ -61,7 +61,7 @@
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
     &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
     &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/dcr/CLionProjects/temp/CMakeLists.txt&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/dcr/RM2022/src/ICRA-Firefly-RoboRTS&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -131,7 +131,12 @@
       <workItem from="1658996012633" duration="16624000" />
       <workItem from="1659070989692" duration="199000" />
       <workItem from="1659071194487" duration="241000" />
-      <workItem from="1659076276766" duration="15469000" />
+      <workItem from="1659076276766" duration="15500000" />
+      <workItem from="1659255329017" duration="2985000" />
+      <workItem from="1659267988273" duration="288000" />
+      <workItem from="1659268759129" duration="706000" />
+      <workItem from="1659271310700" duration="23000" />
+      <workItem from="1659353646914" duration="2445000" />
     </task>
     <servers />
   </component>
@@ -178,17 +183,6 @@
         <entry key="c89949b6-7fef-4f57-b108-82276e114e8f" value="TOOL_WINDOW" />
       </map>
     </option>
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/point2d.cpp</url>
-          <line>53</line>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

@@ -156,7 +156,7 @@ namespace sfm {
             return -1;
         }
         joined_number_++;
-        int max_score = 0;
+        int max_score = -1;
         int index = -1;
         for (const auto &image: images_) {
             if (!image.second.registered) {
@@ -315,5 +315,11 @@ namespace sfm {
 
     bool CorrespondenceGraph::PointHasRegistered(int point_key) {
         return points_.at(point_key)->HasRegistered();
+    }
+
+    void CorrespondenceGraph::GetP(int camera_key, Eigen::Matrix<double, 3, 4> &P) {
+        auto camera = GetCameraModel(camera_key);
+        cv::Mat temp_P = camera->K_ * camera->T_;
+        std::cout << temp_P.type() << std::endl;
     }
 }

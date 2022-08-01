@@ -108,6 +108,8 @@ namespace sfm {
         bool PointHasRegistered(int point_key);
 
         void SetPairJoined(int index);
+
+        void GetP(int camera_key, Eigen::Matrix<double, 3, 4> &P);
     };
 }
 

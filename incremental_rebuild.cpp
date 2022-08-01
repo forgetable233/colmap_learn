@@ -191,20 +191,20 @@ namespace sfm {
     void IncrementalRebuild::RegisterImage(Eigen::Matrix3d &R, Eigen::Vector3d &t, int camera_key) {
         auto camera = scene_graph_->GetCameraModel(camera_key);
         if (camera != nullptr) {
-            cv::Mat R_;
-            cv::Mat t_;
+            cv::Mat _R;
+            cv::Mat _t;
             cv::Mat dist_coeff = (cv::Mat_<double>(1, 5) << 0, 0, 0, 0, 0);
             std::vector<cv::Point3f> world_points;
             std::vector<cv::Point2f> image_points;
             if (scene_graph_->GetRelatedPoints(camera_key, world_points, image_points)) {
-                cv::solvePnPRansac(world_points, image_points, camera->K_, dist_coeff, R_, t_);
+                cv::solvePnPRansac(world_points, image_points, camera->K_, dist_coeff, _R, _t);
                 cv::Mat temp_R;
-                cv::Rodrigues(R_, temp_R);
-                t_.col(0).copyTo(camera->T_.col(3));
+                cv::Rodrigues(_R, temp_R);
+                camera->SetCameraPose(temp_R, _t);
+                _t.col(0).copyTo(camera->T_.col(3));
                 temp_R.col(0).copyTo(camera->T_.col(0));
                 temp_R.col(1).copyTo(camera->T_.col(1));
                 temp_R.col(2).copyTo(camera->T_.col(2));
-                std::cout << camera->T_ << std::endl;
             } else {
                 std::cerr << "Can not get the related points" << std::endl << std::endl;
             }
@@ -217,12 +217,21 @@ namespace sfm {
         scene_graph_->ComputeScore(camera_key);
     }
 
-    void IncrementalRebuild::MultiViewTriangulation(int camera_key) {
-        std::unordered_map<int, std::vector<int>> new_image_points;
+    void IncrementalRebuild::MultiViewTriangulation(int camera_key, MultiViewType type) {
         std::vector<Eigen::Vector3d> world_points;
+        std::unordered_map<int, std::vector<int>> new_image_points;
+        std::map<int, Eigen::Matrix<double, 3, 4>> P;
         for (const auto &joined_image: joined_images_) {
             GetUnregisteredPoints(joined_image, camera_key, new_image_points);
-
+        }
+        if (type == kSVD) {
+            /** 利用SVD加上多视角进行一个多视角三角化的计算，算是传统三角化方法 **/
+            for (const auto &joined_image: joined_images_) {
+                Eigen::Matrix<double, 3, 4> temp_P;
+                scene_graph_->GetP(joined_image, temp_P);
+            }
+        } else if (type == kRANSAC) {
+            /** 此处是尝试复现colmap中，利用RANSAC进行多视图三角化的方法 **/
         }
     }
 
@@ -237,7 +246,7 @@ namespace sfm {
                 int new_point_key = CorrespondenceGraph::ComputePointKey(new_camera_key, match.trainIdx);
                 int old_point_key = CorrespondenceGraph::ComputePointKey(old_camera_key, match.queryIdx);
                 if (!scene_graph_->PointHasRegistered(new_point_key) &&
-                    !scene_graph_->PointHasRegistered(old_camera_key)) {
+                    !scene_graph_->PointHasRegistered(old_point_key)) {
                     if (points.find(new_point_key) == points.end()) {
                         std::vector<int> temp;
                         points.insert(std::pair<int, std::vector<int>>(new_point_key, temp));
@@ -250,7 +259,7 @@ namespace sfm {
                 int new_point_key = CorrespondenceGraph::ComputePointKey(new_camera_key, match.queryIdx);
                 int old_point_key = CorrespondenceGraph::ComputePointKey(old_camera_key, match.trainIdx);
                 if (!scene_graph_->PointHasRegistered(new_point_key) &&
-                    !scene_graph_->PointHasRegistered(old_camera_key)) {
+                    !scene_graph_->PointHasRegistered(old_point_key)) {
                     if (points.find(new_point_key) == points.end()) {
                         std::vector<int> temp;
                         points.insert(std::pair<int, std::vector<int>>(new_point_key, temp));
