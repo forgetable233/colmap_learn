@@ -46,6 +46,8 @@ namespace sfm {
 
         void AddWoldPoint(Eigen::Vector3d _world_point);
 
+        void GetPixelPoint(Eigen::Vector2d &point);
+
         inline bool FindPoint(int image_id);
 
         bool AddCorrPoint(int image_id, int point_id);

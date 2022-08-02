@@ -37,6 +37,7 @@ namespace sfm {
 
             bool registered = false;
         };
+
         /** 保存当前加入的图片的数量 **/
         int joined_number_ = 2;
 
@@ -78,6 +79,14 @@ namespace sfm {
 
         int GetBestNextImage();
 
+        static int GetCameraKeyByPoint(int point_key);
+
+        static int ComputePointKey(int camera_key, int point_index);
+
+        static int ComputeEdgeKey(int camera1, int camera2);
+
+        int ComputeWorldPointKey(int camera1, int camera2, int index);
+
         std::shared_ptr<CameraModel> GetCameraModel(int edge_key, CameraChoice choice);
 
         std::shared_ptr<CameraModel> GetCameraModel(int camera_key);
@@ -86,13 +95,11 @@ namespace sfm {
 
         std::unordered_map<int, std::shared_ptr<Edge>> &GetEdges();
 
-        static int ComputePointKey(int camera_key, int point_index);
+        bool GetPixelPoint(int point_key, Eigen::Vector2d &point);
 
-        static inline int ComputeEdgeKey(int camera1, int camera2);
+        void AddWorldPoints(int camera1, int camera2, int index, const std::shared_ptr<Point3d> &point_ptr);
 
-        int ComputeWorldPointKey(int camera1, int camera2, int index);
-
-        void AddWorldPoints(int camera1, int camera2, int index, const std::shared_ptr<Point3d>& point_ptr);
+        void AddWorldPoints(int camera_key, const std::vector<int> &corrs, std::shared_ptr<Point3d> world_ptr);
 
         void RebuildPointRelation(int point_key);
 

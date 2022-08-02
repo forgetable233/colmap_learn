@@ -70,4 +70,8 @@ namespace sfm {
         world_point_->AddRelatedPoint(world_points);
         image_points.emplace_back(pixel_point_.x(), pixel_point_.y());
     }
+
+    void Point2d::GetPixelPoint(Eigen::Vector2d &point) {
+        point = pixel_point_;
+    }
 }

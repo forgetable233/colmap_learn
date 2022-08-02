@@ -20,7 +20,7 @@ namespace sfm {
                 edges_.at(key)->key_ = key;
             }
         }
-        std::cout << "Have found " << edges_.size() << "edges" << std::endl;
+        std::cout << "Have found " << edges_.size() << " edges" << std::endl;
         BuildPointKey();
     }
 
@@ -156,7 +156,7 @@ namespace sfm {
             return -1;
         }
         joined_number_++;
-        int max_score = -1;
+        unsigned max_score = 0;
         int index = -1;
         for (const auto &image: images_) {
             if (!image.second.registered) {
@@ -252,6 +252,15 @@ namespace sfm {
         }
     }
 
+    void CorrespondenceGraph::AddWorldPoints(int camera_key,
+                                             const std::vector<int> &corrs,
+                                             std::shared_ptr<Point3d> world_ptr) {
+        points_.at(camera_key)->AddWorldPoints(world_ptr);
+        for (const auto &corr: corrs) {
+            points_.at(corr)->AddWorldPoints(world_ptr);
+        }
+    }
+
     void CorrespondenceGraph::RebuildPointRelation(int point_key) {
 
     }
@@ -290,6 +299,10 @@ namespace sfm {
         return true;
     }
 
+    /**
+     * 计算每个图片的score，计算目前新加入的图片与没有加入的图片之间的score
+     * @param camera_key
+     */
     void CorrespondenceGraph::ComputeScore(int camera_key) {
         for (auto &image: images_) {
             if (image.first != camera_key) {
@@ -320,6 +333,19 @@ namespace sfm {
     void CorrespondenceGraph::GetP(int camera_key, Eigen::Matrix<double, 3, 4> &P) {
         auto camera = GetCameraModel(camera_key);
         cv::Mat temp_P = camera->K_ * camera->T_;
-        std::cout << temp_P.type() << std::endl;
+        cv::cv2eigen(temp_P, P);
+    }
+
+    bool CorrespondenceGraph::GetPixelPoint(int point_key, Eigen::Vector2d &point) {
+        if (points_.find(point_key) == points_.end()) {
+            std::cerr << "Unable to find the target point" << std::endl;
+            return false;
+        }
+        points_.at(point_key)->GetPixelPoint(point);
+        return true;
+    }
+
+    int CorrespondenceGraph::GetCameraKeyByPoint(int point_key) {
+        return point_key / 100000;
     }
 }

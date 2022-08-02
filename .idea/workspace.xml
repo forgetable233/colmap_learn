@@ -26,6 +26,9 @@
       <change beforePath="$PROJECT_DIR$/correspondence_graph.h" beforeDir="false" afterPath="$PROJECT_DIR$/correspondence_graph.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/incremental_rebuild.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/incremental_rebuild.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/incremental_rebuild.h" beforeDir="false" afterPath="$PROJECT_DIR$/incremental_rebuild.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/point2d.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/point2d.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/point2d.h" beforeDir="false" afterPath="$PROJECT_DIR$/point2d.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/point_viewer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/point_viewer.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -136,7 +139,7 @@
       <workItem from="1659267988273" duration="288000" />
       <workItem from="1659268759129" duration="706000" />
       <workItem from="1659271310700" duration="23000" />
-      <workItem from="1659353646914" duration="2445000" />
+      <workItem from="1659353646914" duration="17632000" />
     </task>
     <servers />
   </component>
