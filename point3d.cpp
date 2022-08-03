@@ -20,4 +20,16 @@ namespace sfm {
     void Point3d::AddRelatedPoint(std::vector<cv::Point3f> &world_points) {
         world_points.emplace_back(world_point_.x(), world_point_.y(), world_point_.z());
     }
+
+    void Point3d::GetWorldPoint(double world_point[3]) {
+        world_point[0] = world_point_.x();
+        world_point[1] = world_point_.y();
+        world_point[2] = world_point_.z();
+    }
+
+    void Point3d::RefreshWorldPoint(double new_world_point[3]) {
+        world_point_.x() = new_world_point[0];
+        world_point_.y() = new_world_point[1];
+        world_point_.z() = new_world_point[2];
+    }
 }

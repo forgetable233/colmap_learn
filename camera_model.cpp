@@ -66,4 +66,29 @@ namespace sfm {
         this->K_.convertTo(this->K_, 6);
         return true;
     }
+
+    void CameraModel::RefreshCameraParam(double *new_para) {
+        K_.at<double>(0, 0) = new_para[0];
+        K_.at<double>(0, 1) = new_para[1];
+        K_.at<double>(0, 2) = new_para[2];
+        K_.at<double>(1, 0) = new_para[3];
+        K_.at<double>(1, 1) = new_para[4];
+        K_.at<double>(1, 2) = new_para[5];
+        K_.at<double>(2, 0) = new_para[6];
+        K_.at<double>(2, 1) = new_para[7];
+        K_.at<double>(2, 2) = new_para[8];
+
+        T_.at<double>(0, 0) = new_para[9];
+        T_.at<double>(0, 1) = new_para[10];
+        T_.at<double>(0, 2) = new_para[11];
+        T_.at<double>(0, 3) = new_para[12];
+        T_.at<double>(1, 0) = new_para[13];
+        T_.at<double>(1, 1) = new_para[14];
+        T_.at<double>(1, 2) = new_para[15];
+        T_.at<double>(1, 3) = new_para[16];
+        T_.at<double>(2, 0) = new_para[17];
+        T_.at<double>(2, 1) = new_para[18];
+        T_.at<double>(2, 2) = new_para[19];
+        T_.at<double>(2, 3) = new_para[20];
+    }
 }

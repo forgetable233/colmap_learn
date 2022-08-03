@@ -16,6 +16,7 @@
 #include <Eigen/Dense>
 #include <opencv2/opencv.hpp>
 #include <opencv2/core.hpp>
+#include <ceres/ceres.h>
 
 #include "camera_model.h"
 #include "edge.h"

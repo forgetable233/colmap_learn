@@ -117,6 +117,8 @@ namespace sfm {
         void SetPairJoined(int index);
 
         void GetP(int camera_key, Eigen::Matrix<double, 3, 4> &P);
+
+        void GetCameraPoints(std::unordered_map<int, std::vector<std::shared_ptr<Point2d>>> &points);
     };
 }
 

@@ -42,16 +42,16 @@ namespace sfm {
                 return;
             }
             /** 下采样 提升运行速度**/
-//            cv::pyrDown(image,
-//                        down_sample_2,
-//                        cv::Size{image.cols / 2, image.rows / 2});
-//            cv::pyrDown(down_sample_2,
-//                        down_sample_4,
-//                        cv::Size{down_sample_2.cols / 2, down_sample_2.rows / 2});
-//            cv::pyrDown(down_sample_4,
-//                        down_sample_8,
-//                        cv::Size{down_sample_4.cols / 2, down_sample_4.rows / 2});
-            cv::cvtColor(image, grey_image, cv::COLOR_BGR2GRAY);
+            cv::pyrDown(image,
+                        down_sample_2,
+                        cv::Size{image.cols / 2, image.rows / 2});
+            cv::pyrDown(down_sample_2,
+                        down_sample_4,
+                        cv::Size{down_sample_2.cols / 2, down_sample_2.rows / 2});
+            cv::pyrDown(down_sample_4,
+                        down_sample_8,
+                        cv::Size{down_sample_4.cols / 2, down_sample_4.rows / 2});
+            cv::cvtColor(down_sample_8, grey_image, cv::COLOR_BGR2GRAY);
 
             _cameras.emplace_back(std::make_shared<CameraModel>(grey_image, number));
             number++;

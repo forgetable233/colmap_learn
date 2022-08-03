@@ -348,4 +348,18 @@ namespace sfm {
     int CorrespondenceGraph::GetCameraKeyByPoint(int point_key) {
         return point_key / 100000;
     }
+
+    void CorrespondenceGraph::GetCameraPoints(std::unordered_map<int, std::vector<std::shared_ptr<Point2d>>> &points) {
+        int camera;
+        for (int i = 0; i < IMAGE_NUMBER; ++i) {
+            std::vector<std::shared_ptr<Point2d>> temp;
+            points.insert(std::pair<int, std::vector<std::shared_ptr<Point2d>>>(i, temp));
+        }
+        for (const auto &point: points_) {
+            if (point.second->HasRegistered()) {
+                camera = point.first / 100000;
+                points.at(camera).push_back(point.second);
+            }
+        }
+    }
 }

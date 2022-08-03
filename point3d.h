@@ -28,6 +28,10 @@ namespace sfm {
 
         void AddRelatedPoint(std::vector<cv::Point3f> &world_points);
 
+        void RefreshWorldPoint(double new_world_point[3]);
+
+        void GetWorldPoint(double world_point[3]);
+
         Eigen::Vector3d GetPoint();
 
         ~Point3d() = default;

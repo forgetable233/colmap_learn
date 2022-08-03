@@ -74,4 +74,14 @@ namespace sfm {
     void Point2d::GetPixelPoint(Eigen::Vector2d &point) {
         point = pixel_point_;
     }
+
+    void Point2d::GetPixelAndWorldPoint(double *pixel_point, double *world_point) {
+        pixel_point[0] = this->pixel_point_.x();
+        pixel_point[1] = this->pixel_point_.y();
+        world_point_->GetWorldPoint(world_point);
+    }
+
+    void Point2d::RefreshWorldPoint(double *new_world_point) {
+        world_point_->RefreshWorldPoint(new_world_point);
+    }
 }

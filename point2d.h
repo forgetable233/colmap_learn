@@ -65,6 +65,10 @@ namespace sfm {
         void AddRelatedPoint(std::vector<cv::Point3f> &world_points,
                              std::vector<cv::Point2f> &image_points);
 
+        void GetPixelAndWorldPoint(double pixel_point[2], double world_point[3]);
+
+        void RefreshWorldPoint(double *new_world_point);
+
         ~Point2d();
     };
 }

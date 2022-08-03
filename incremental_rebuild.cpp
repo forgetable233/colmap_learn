@@ -32,9 +32,9 @@ namespace sfm {
             std::cout << "Have added a new image" << std::endl;
         }
         std::cout << "Have finished the rebuild" << std::endl;
-        ViewAllPoints();
         std::cout << world_points_.size() << std::endl;
-
+        BA();
+        ViewAllPoints();
     }
 
     int IncrementalRebuild::GetBestBeginEdge(int &second_max) {
@@ -353,6 +353,48 @@ namespace sfm {
      * 对图像进行BA修正
      */
     void IncrementalRebuild::BA() {
+        std::cout << "Begin to solve BA problem" << std::endl;
+        ceres::Problem problem;
+        ceres::Solver solver;
+        ceres::Solver::Options options;
+        ceres::Solver::Summary summary;
 
+        options.linear_solver_type = ceres::DENSE_QR;
+        options.minimizer_progress_to_stdout = true;
+
+        std::unordered_map<int, std::vector<std::shared_ptr<Point2d>>> points;
+        scene_graph_->GetCameraPoints(points);
+        for (int i = 0; i < IMAGE_NUMBER; ++i) {
+            auto camera = scene_graph_->GetCameraModel(i);
+            double camera_params[21] = {camera->K_.at<double>(0, 0), camera->K_.at<double>(0, 1),
+                                        camera->K_.at<double>(0, 2), camera->K_.at<double>(1, 0),
+                                        camera->K_.at<double>(1, 1), camera->K_.at<double>(1, 2),
+                                        camera->K_.at<double>(2, 0), camera->K_.at<double>(2, 1),
+                                        camera->K_.at<double>(2, 2), camera->T_.at<double>(0, 0),
+                                        camera->T_.at<double>(0, 1), camera->T_.at<double>(0, 2),
+                                        camera->T_.at<double>(0, 3), camera->T_.at<double>(1, 0),
+                                        camera->T_.at<double>(1, 1), camera->T_.at<double>(1, 2),
+                                        camera->T_.at<double>(1, 3), camera->T_.at<double>(2, 0),
+                                        camera->T_.at<double>(2, 1), camera->T_.at<double>(2, 2),
+                                        camera->T_.at<double>(2, 3)};
+            std::cout << std::endl;
+            double pixel_point[points.at(i).size()][2];
+            double world_point[points.at(i).size()][3];
+            for (int j = 0; j < points.at(i).size(); j++) {
+                points.at(i)[j]->GetPixelAndWorldPoint(pixel_point[i], world_point[j]);
+                ceres::CostFunction *cost_function = ReprojectionError::Create(pixel_point[j][0], pixel_point[j][1]);
+                ceres::LossFunction *loss_function = new ceres::HuberLoss(1.0);
+//                std::cout << world_point[j][0] << ' ' << world_point[j][2] << ' ' << world_point[j][2] << std::endl;
+
+                problem.AddResidualBlock(cost_function, loss_function, camera_params, world_point[j]);
+            }
+            ceres::Solve(options, &problem, &summary);
+            camera->RefreshCameraParam(camera_params);
+            for (int j = 0; j < points.at(i).size(); ++j) {
+                points.at(i)[j]->RefreshWorldPoint(world_point[j]);
+            }
+            std::cout << "Have finished the BA of the image " << i << std::endl;
+        }
+        std::cout << "Have finished the BA" << std::endl;
     }
 }

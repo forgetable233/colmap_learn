@@ -39,6 +39,8 @@ namespace sfm {
 
         void SetCameraPose(const cv::Mat &_R, const cv::Mat &_t);
 
+        void RefreshCameraParam(double *new_para);
+
         ~CameraModel() = default;
     };
 }
