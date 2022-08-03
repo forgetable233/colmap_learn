@@ -34,6 +34,7 @@ namespace sfm {
         std::cout << "Have finished the rebuild" << std::endl;
         ViewAllPoints();
         std::cout << world_points_.size() << std::endl;
+
     }
 
     int IncrementalRebuild::GetBestBeginEdge(int &second_max) {
@@ -257,6 +258,7 @@ namespace sfm {
                 P.insert(std::pair<int, Eigen::Matrix<double, 3, 4>>(joined_image, temp_P));
             }
             scene_graph_->GetP(camera_key, temp_P);
+            std::cout << temp_P << std::endl;
             P.insert(std::pair<int, Eigen::Matrix<double, 3, 4>>(camera_key, temp_P));
             for (const auto &image_point: new_image_points) {
                 Eigen::Vector2d pixel_point;

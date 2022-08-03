@@ -40,6 +40,8 @@ namespace sfm {
 
         void ViewPoints();
 
+        void StorePCD();
+
         virtual ~PointViewer();
     };
 } // sfm

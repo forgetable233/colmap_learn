@@ -21,14 +21,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="00e7edfa-187b-4a21-9a73-3aca43181e93" name="变更" comment="变更">
-      <change afterPath="$PROJECT_DIR$/newimage/IMG_2342.JPG" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/newimage/IMG_2343.JPG" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/newimage/IMG_2344.JPG" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/newimage/IMG_2345.JPG" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/newimage/IMG_2346.JPG" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/newimage/IMG_2347.JPG" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/img_loader.cc" beforeDir="false" afterPath="$PROJECT_DIR$/img_loader.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/incremental_rebuild.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/incremental_rebuild.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/point_viewer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/point_viewer.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/point_viewer.h" beforeDir="false" afterPath="$PROJECT_DIR$/point_viewer.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -80,11 +78,6 @@
     </key>
   </component>
   <component name="RunManager">
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="test" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="test" TARGET_NAME="test" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="test" RUN_TARGET_NAME="test">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -150,7 +143,9 @@
       <workItem from="1659268759129" duration="706000" />
       <workItem from="1659271310700" duration="23000" />
       <workItem from="1659353646914" duration="19465000" />
-      <workItem from="1659448354929" duration="329000" />
+      <workItem from="1659448354929" duration="3127000" />
+      <workItem from="1659451742432" duration="31000" />
+      <workItem from="1659511005802" duration="2917000" />
     </task>
     <servers />
   </component>

@@ -112,7 +112,8 @@ void CheckFMatrix(std::vector<std::shared_ptr<sfm::CameraModel>> &cameras) {
 
 int main() {
     int scene_graph[IMAGE_NUMBER][IMAGE_NUMBER];
-    std::string file_path_linux = "/home/dcr/codes/CorC++/colmap/testImage/gerrard-hall/newimage/";
+//    std::string file_path_linux = "/home/dcr/codes/CorC++/colmap/testImage/gerrard-hall/newimage/";
+    std::string file_path_linux = "../newimage/";
     std::vector<std::shared_ptr<sfm::CameraModel>> cameras;
 
     sfm::ImgLoader loader{file_path_linux, cameras};
