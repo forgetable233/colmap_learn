@@ -24,6 +24,7 @@
 #include "thresholds.h"
 #include "correspondence_graph.h"
 #include "point_viewer.h"
+#include "reprojection_error.h"
 
 namespace sfm {
     enum TrianguleType {
@@ -47,7 +48,7 @@ namespace sfm {
 
         ~IncrementalRebuild() = default;
 
-        IncrementalRebuild(CorrespondenceGraph* _graph);
+        explicit IncrementalRebuild(CorrespondenceGraph* _graph);
 
         bool Init(int index);
 

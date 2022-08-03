@@ -7,7 +7,9 @@ set(CMAKE_CXX_STANDARD 14)
 find_package(Eigen3 CONFIG REQUIRED)
 find_package(OpenCV CONFIG REQUIRED)
 find_package(PCL CONFIG REQUIRED)
-#find_package(PCL 1.9 REQUIRED COMPONENTS common io)
+find_package(Ceres REQUIRED)
+
+include_directories(${CERES_INCLUDE_DIRS})
 
 add_executable(test main.cpp
         img_loader.cc img_loader.h
@@ -18,7 +20,7 @@ add_executable(test main.cpp
         edge.cpp edge.h
         incremental_rebuild.cpp incremental_rebuild.h
         correspondence_graph.cpp correspondence_graph.h
-        point3d.cpp point3d.h point_viewer.cpp point_viewer.h)
+        point3d.cpp point3d.h point_viewer.cpp point_viewer.h reprojection_error.cpp reprojection_error.h)
 
-target_link_libraries(test PRIVATE Eigen3::Eigen  ${OpenCV_LIBS} ${PCL_LIBRARIES})
+target_link_libraries(test PRIVATE Eigen3::Eigen  ${OpenCV_LIBS} ${PCL_LIBRARIES} ${CERES_LIBRARIES})
 

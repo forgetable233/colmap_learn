@@ -348,4 +348,11 @@ namespace sfm {
         world_point.z() = homo_world_point(2);
         return world_point;
     }
+
+    /**
+     * 对图像进行BA修正
+     */
+    void IncrementalRebuild::BA() {
+
+    }
 }
