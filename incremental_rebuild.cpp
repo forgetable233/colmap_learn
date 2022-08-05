@@ -49,6 +49,7 @@ namespace sfm {
     void IncrementalRebuild::PixToCam(cv::Mat &K,
                                       std::vector<cv::Point2f> &input_points,
                                       std::vector<cv::Point2f> &output_points) {
+                                      std::vector<cv::Point2f> &output_points) {
         if (K.cols != 3 || K.rows != 3) {
             std::cerr << "the col or the row of the input K isn't equal to 3" << std::endl;
             return;
@@ -381,10 +382,9 @@ namespace sfm {
             double pixel_point[points.at(i).size()][2];
             double world_point[points.at(i).size()][3];
             for (int j = 0; j < points.at(i).size(); j++) {
-                points.at(i)[j]->GetPixelAndWorldPoint(pixel_point[i], world_point[j]);
+                points.at(i)[j]->GetPixelAndWorldPoint(pixel_point[j], world_point[j]);
                 ceres::CostFunction *cost_function = ReprojectionError::Create(pixel_point[j][0], pixel_point[j][1]);
                 ceres::LossFunction *loss_function = new ceres::HuberLoss(1.0);
-//                std::cout << world_point[j][0] << ' ' << world_point[j][2] << ' ' << world_point[j][2] << std::endl;
 
                 problem.AddResidualBlock(cost_function, loss_function, camera_params, world_point[j]);
             }

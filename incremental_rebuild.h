@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <map>
 #include <unordered_map>
+#include <thread>
 
 #include <Eigen/Core>
 #include <Eigen/Dense>

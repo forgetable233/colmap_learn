@@ -10,6 +10,9 @@
 #include <cmath>
 
 #include <ceres/ceres.h>
+#include <ceres/cost_function.h>
+#include <ceres/cost_function_to_functor.h>
+#include <ceres/rotation.h>
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <Eigen/SVD>
@@ -31,17 +34,17 @@ namespace sfm {
         template<typename T>
         bool operator()(const T *const camera, const T *const point, T *residuals) const {
             T predictions[2];
-            Eigen::Vector3d predict_point;
+            Eigen::Matrix<T, 3, 1> predict_point;
             Eigen::Matrix<T, 3, 3> K;
             Eigen::Matrix<T, 3, 4> t;
             Eigen::Matrix<T, 3, 1> world_point;
-            K << camera[0], camera[1], camera[2],
-                    camera[3], camera[4], camera[5],
-                    camera[6], camera[7], camera[8];
-            t << camera[9], camera[10], camera[11], camera[12],
-                    camera[13], camera[14], camera[15], camera[16],
-                    camera[17], camera[18], camera[19], camera[20];
-            world_point << point[0], point[1], point[2];
+            K << T(camera[0]), T(camera[1]), T(camera[2]),
+                    T(camera[3]), T(camera[4]), T(camera[5]),
+                    T(camera[6]), T(camera[7]), T(camera[8]);
+            t << T(camera[9]), T(camera[10]), T(camera[11]), T(camera[12]),
+                    T(camera[13]), T(camera[14]), T(camera[15]), T(camera[16]),
+                    T(camera[17]), T(camera[18]), T(camera[19]), T(camera[20]);
+            world_point << T(point[0]), T(point[1]), T(point[2]);
             predict_point = K * t * world_point.homogeneous();
             predict_point.x() /= predict_point.z();
             predict_point.y() /= predict_point.z();
@@ -49,12 +52,6 @@ namespace sfm {
             predictions[1] = T(predict_point.y());
             residuals[0] = predictions[0] - T(observed_x_);
             residuals[1] = predictions[1] - T(observed_y_);
-            return true;
-        }
-
-        template<typename T>
-        static inline bool ComputePredictPoint(const T *camera, const T *point, T *predictions) {
-
             return true;
         }
 
