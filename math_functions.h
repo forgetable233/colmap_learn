@@ -50,6 +50,10 @@ namespace sfm {
                                              std::vector<Eigen::Vector2d> &points_normed,
                                              Eigen::Matrix3d &trans_m);
 
+        static void Triangulation(const Eigen::Matrix<double, 3, 4> &T1, const Eigen::Matrix<double, 3, 4> &T2,
+                                  const std::vector<Eigen::Vector2d> &points1, const std::vector<Eigen::Vector2d> &points2,
+                                  std::vector<Eigen::Vector3d> &world_points);
+
         /**
          * 用于计算对应的内点的数量
          * @param key_points_1

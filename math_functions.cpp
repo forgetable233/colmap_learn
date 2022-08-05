@@ -196,4 +196,10 @@ namespace sfm {
         }
     }
 
+    void MathFunction::Triangulation(const Eigen::Matrix<double, 3, 4> &T1, const Eigen::Matrix<double, 3, 4> &T2,
+                                     const std::vector<Eigen::Vector2d> &points1, const std::vector<Eigen::Vector2d> &points2,
+                                     std::vector<Eigen::Vector3d> &world_points) {
+
+    }
+
 }
