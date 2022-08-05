@@ -22,9 +22,9 @@
   <component name="ChangeListManager">
     <list default="true" id="00e7edfa-187b-4a21-9a73-3aca43181e93" name="变更" comment="变更">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/img_loader.cc" beforeDir="false" afterPath="$PROJECT_DIR$/img_loader.cc" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/incremental_rebuild.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/incremental_rebuild.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/incremental_rebuild.h" beforeDir="false" afterPath="$PROJECT_DIR$/incremental_rebuild.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reprojection_error.h" beforeDir="false" afterPath="$PROJECT_DIR$/reprojection_error.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/point_viewer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/point_viewer.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -145,7 +145,7 @@
       <workItem from="1659451742432" duration="31000" />
       <workItem from="1659511005802" duration="18467000" />
       <workItem from="1659620249422" duration="1000" />
-      <workItem from="1659690800784" duration="4706000" />
+      <workItem from="1659690800784" duration="10307000" />
     </task>
     <servers />
   </component>

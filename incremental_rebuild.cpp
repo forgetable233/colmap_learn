@@ -33,7 +33,7 @@ namespace sfm {
         }
         std::cout << "Have finished the rebuild" << std::endl;
         std::cout << world_points_.size() << std::endl;
-        BA();
+//        BA();
         ViewAllPoints();
     }
 
@@ -48,7 +48,6 @@ namespace sfm {
 
     void IncrementalRebuild::PixToCam(cv::Mat &K,
                                       std::vector<cv::Point2f> &input_points,
-                                      std::vector<cv::Point2f> &output_points) {
                                       std::vector<cv::Point2f> &output_points) {
         if (K.cols != 3 || K.rows != 3) {
             std::cerr << "the col or the row of the input K isn't equal to 3" << std::endl;
@@ -350,22 +349,30 @@ namespace sfm {
         return world_point;
     }
 
+    int test(int a, int b) {
+        return a + b;
+    }
+
     /**
      * 对图像进行BA修正
      */
     void IncrementalRebuild::BA() {
         std::cout << "Begin to solve BA problem" << std::endl;
-        ceres::Problem problem;
-        ceres::Solver solver;
-        ceres::Solver::Options options;
-        ceres::Solver::Summary summary;
-
-        options.linear_solver_type = ceres::DENSE_QR;
-        options.minimizer_progress_to_stdout = true;
 
         std::unordered_map<int, std::vector<std::shared_ptr<Point2d>>> points;
         scene_graph_->GetCameraPoints(points);
+//        std::shared_ptr<ceres::Problem[]> problems(new ceres::Problem[16]);
+        std::shared_ptr<ceres::Solver::Summary[]> summaries(new ceres::Solver::Summary[16]);
+        // 在BA处使用RANSAC进行优化，计算对应的点的数量以及效果
         for (int i = 0; i < IMAGE_NUMBER; ++i) {
+            ceres::Problem problem;
+            ceres::Solver solver;
+            ceres::Solver::Options options;
+            ceres::Solver::Summary summary;
+            options.linear_solver_type = ceres::DENSE_SCHUR;
+            options.num_threads = 16;
+//        options.num_linear
+            options.minimizer_progress_to_stdout = true;
             auto camera = scene_graph_->GetCameraModel(i);
             double camera_params[21] = {camera->K_.at<double>(0, 0), camera->K_.at<double>(0, 1),
                                         camera->K_.at<double>(0, 2), camera->K_.at<double>(1, 0),
@@ -381,11 +388,11 @@ namespace sfm {
             std::cout << std::endl;
             double pixel_point[points.at(i).size()][2];
             double world_point[points.at(i).size()][3];
+            unsigned int k = points.size() / 16;
             for (int j = 0; j < points.at(i).size(); j++) {
                 points.at(i)[j]->GetPixelAndWorldPoint(pixel_point[j], world_point[j]);
                 ceres::CostFunction *cost_function = ReprojectionError::Create(pixel_point[j][0], pixel_point[j][1]);
                 ceres::LossFunction *loss_function = new ceres::HuberLoss(1.0);
-
                 problem.AddResidualBlock(cost_function, loss_function, camera_params, world_point[j]);
             }
             ceres::Solve(options, &problem, &summary);
