@@ -16,7 +16,8 @@ namespace sfm {
     PointViewer::PointViewer(const std::vector<Eigen::Vector3d> &world_points) {
         this->cloud_.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
         viewer_.setBackgroundColor(.0, .0, .0);
-        for (const auto &point: world_points) {
+        NormalizePoints(world_points);
+        for (const auto &point: this->normed_points_) {
             pcl::PointXYZRGB temp;
             temp.x = static_cast<float>(point.x());
             temp.y = static_cast<float>(point.y());
@@ -34,6 +35,12 @@ namespace sfm {
         viewer_.setCameraPosition(1, 1, 1,
                                   0, 0, 4,
                                   0, 1, 5);
+        /*for (const auto &point: points_) {
+            std::cout << point.x() << ' ' << point.y() << ' ' << point.z() << std::endl;
+        }*/
+        std::cout << "Have finished the initial of the points" << std::endl;
+        std::cout << "The size of the world points is " << points_.size() << std::endl;
+        std::cout << "The size of the normalized points is " << normed_points_.size() << std::endl;
         while (!viewer_.wasStopped()) {
             viewer_.spinOnce(100);
         }
@@ -45,6 +52,24 @@ namespace sfm {
             writer.write("../pointClouds/InitialData.pcb", *cloud_);
         } else {
             std::cerr << "The size of the point clouds is zero" << std::endl;
+        }
+    }
+
+    void PointViewer::NormalizePoints(const std::vector<Eigen::Vector3d> &points) {
+        double x;
+        double y;
+        double z;
+        for (const auto &point: points) {
+            x += point.x();
+            y += point.y();
+            z += point.z();
+            this->points_.emplace_back(point);
+        }
+        x /= static_cast<double>(points.size());
+        y /= static_cast<double>(points.size());
+        z /= static_cast<double>(points.size());
+        for (const auto &point: points) {
+            this->normed_points_.emplace_back(point.x() - x, point.y() - y, point.z() - z);
         }
     }
 

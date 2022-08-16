@@ -18,6 +18,7 @@ namespace sfm {
                 edges_.insert(std::pair<int, std::shared_ptr<Edge>>
                                       (key, std::make_shared<Edge>(cameras[i], cameras[j])));
                 edges_.at(key)->key_ = key;
+                std::cout << "Have built " << edges_.size() << " edges" << std::endl;
             }
         }
         std::cout << "Have found " << edges_.size() << " edges" << std::endl;

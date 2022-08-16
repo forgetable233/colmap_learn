@@ -32,7 +32,6 @@ namespace sfm {
             std::cout << "Have added a new image" << std::endl;
         }
         std::cout << "Have finished the rebuild" << std::endl;
-        std::cout << world_points_.size() << std::endl;
 //        BA();
         ViewAllPoints();
     }

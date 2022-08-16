@@ -28,7 +28,9 @@ namespace sfm {
 
     class PointViewer {
     private:
-        std::vector<pcl::PointXYZRGB> points_;
+        std::vector<Eigen::Vector3d> points_;
+
+        std::vector<Eigen::Vector3d> normed_points_;
 
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_;
 
@@ -41,6 +43,8 @@ namespace sfm {
         void ViewPoints();
 
         void StorePCD();
+
+        void NormalizePoints(const std::vector<Eigen::Vector3d> &points);
 
         virtual ~PointViewer();
     };
