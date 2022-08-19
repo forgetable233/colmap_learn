@@ -22,8 +22,9 @@
   <component name="ChangeListManager">
     <list default="true" id="00e7edfa-187b-4a21-9a73-3aca43181e93" name="变更" comment="变更">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/correspondence_graph.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/correspondence_graph.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/img_loader.cc" beforeDir="false" afterPath="$PROJECT_DIR$/img_loader.cc" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/incremental_rebuild.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/incremental_rebuild.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/incremental_rebuild.h" beforeDir="false" afterPath="$PROJECT_DIR$/incremental_rebuild.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/point_viewer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/point_viewer.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/point_viewer.h" beforeDir="false" afterPath="$PROJECT_DIR$/point_viewer.h" afterDir="false" />
     </list>
@@ -77,6 +78,11 @@
     </key>
   </component>
   <component name="RunManager">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="test" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="test" TARGET_NAME="test" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="test" RUN_TARGET_NAME="test">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -149,7 +155,9 @@
       <workItem from="1659690800784" duration="11761000" />
       <workItem from="1660134138497" duration="1956000" />
       <workItem from="1660637591053" duration="3650000" />
-      <workItem from="1660664617761" duration="1000" />
+      <workItem from="1660664617761" duration="299000" />
+      <workItem from="1660919323982" duration="2966000" />
+      <workItem from="1660922952009" duration="3638000" />
     </task>
     <servers />
   </component>

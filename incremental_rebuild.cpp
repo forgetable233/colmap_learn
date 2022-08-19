@@ -144,22 +144,28 @@ namespace sfm {
             check1 = P1.row(2) * temp_point;
             check2 = P2.row(2) * temp_point;
             /** 测试不加上删除负数情况 **/
-//            if (check1.at<double>(0, 0) >= 0 && check2.at<double>(0, 0) >= 0) {
-            sum++;
-            temp.x() = temp_point.at<double>(0, 0) / temp_point.at<double>(3, 0);
-            temp.y() = temp_point.at<double>(1, 0) / temp_point.at<double>(3, 0);
-            temp.z() = temp_point.at<double>(2, 0) / temp_point.at<double>(3, 0);
-            std::shared_ptr<Point3d> world_ptr = std::make_shared<Point3d>(temp);
-            // 将所有的相关点都加入到对应的相关点中
-            scene_graph_->AddWorldPoints(camera1->key_, camera2->key_, i, world_ptr);
-            key = ComputeWorldPointKey();
-            world_points_.insert(std::pair<int, std::shared_ptr<Point3d>>(key, nullptr));
-            world_points_.at(key) = world_ptr;
-//            }
+            /** 下面加入了测试 **/
+            if (check1.at<double>(0, 0) >= 0 && check2.at<double>(0, 0) >= 0) {
+                sum++;
+                temp.x() = temp_point.at<double>(0, 0) / temp_point.at<double>(3, 0);
+                temp.y() = temp_point.at<double>(1, 0) / temp_point.at<double>(3, 0);
+                temp.z() = temp_point.at<double>(2, 0) / temp_point.at<double>(3, 0);
+                std::shared_ptr<Point3d> world_ptr = std::make_shared<Point3d>(temp);
+                // 将所有的相关点都加入到对应的相关点中
+                scene_graph_->AddWorldPoints(camera1->key_, camera2->key_, i, world_ptr);
+                key = ComputeWorldPointKey();
+                world_points_.insert(std::pair<int, std::shared_ptr<Point3d>>(key, nullptr));
+                world_points_.at(key) = world_ptr;
+            }
         }
         std::cout << "The size of the initial points is " << world_points_.size() << std::endl;
     }
 
+    /**
+     * 将计算出的世界坐标系下的点，与对应的像素点联系起来
+     * @param points
+     * @param world_points
+     */
     void IncrementalRebuild::CheckZDepthAndAddWorldPoints(const std::unordered_map<int, std::vector<int>> &points,
                                                           const std::vector<Eigen::Vector3d> &world_points) {
         std::vector<std::shared_ptr<CameraModel>> cameras;
@@ -249,22 +255,23 @@ namespace sfm {
         }
         if (type == kSVD) {
             /** 利用SVD加上多视角进行一个多视角三角化的计算，算是传统三角化方法，只是增加了加入点的量 **/
-            int i = 0;
             Eigen::Matrix<double, Eigen::Dynamic, 3> function;
             Eigen::Matrix<double, 3, 4> temp_P;
+
+            /** 保存所有图片的P **/
             for (const auto &joined_image: joined_images_) {
                 scene_graph_->GetP(joined_image, temp_P);
                 P.insert(std::pair<int, Eigen::Matrix<double, 3, 4>>(joined_image, temp_P));
             }
-            scene_graph_->GetP(camera_key, temp_P);
-            std::cout << temp_P << std::endl;
             P.insert(std::pair<int, Eigen::Matrix<double, 3, 4>>(camera_key, temp_P));
+
             for (const auto &image_point: new_image_points) {
-                Eigen::Vector2d pixel_point;
                 Eigen::Vector3d world_point;
-                world_point = SVDComputeWorldPoint(image_point.first, new_image_points, P);
-                world_points.push_back(world_point);
+                if (SVDComputeWorldPoint(image_point.first, world_point, new_image_points, P)) {
+                    world_points.push_back(world_point);
+                }
             }
+            /** 检查所获得的点的正确性 **/
             CheckZDepthAndAddWorldPoints(new_image_points, world_points);
         } else if (type == kRANSAC) {
             /** 此处是尝试复现colmap中，利用RANSAC进行多视图三角化的方法 **/
@@ -313,13 +320,13 @@ namespace sfm {
         }
     }
 
-    Eigen::Vector3d IncrementalRebuild::SVDComputeWorldPoint(int point_key,
-                                                             const std::unordered_map<int, std::vector<int>> &image_points,
-                                                             const std::map<int, Eigen::Matrix<double, 3, 4>> &P) {
+    bool IncrementalRebuild::SVDComputeWorldPoint(int point_key,
+                                                  Eigen::Vector3d &world_point,
+                                                  const std::unordered_map<int, std::vector<int>> &image_points,
+                                                  const std::map<int, Eigen::Matrix<double, 3, 4>> &P) {
         Eigen::Matrix<double, Eigen::Dynamic, 4> A((1 + image_points.at(point_key).size()) * 2, 4);
         Eigen::Matrix3d K;
         Eigen::Vector2d pixel_point;
-        Eigen::Vector3d world_point;
         int camera_key = CorrespondenceGraph::GetCameraKeyByPoint(point_key);
         int i = 0;
         auto camera = scene_graph_->GetCameraModel(camera_key);
@@ -339,13 +346,17 @@ namespace sfm {
         }
         Eigen::JacobiSVD<Eigen::Matrix<double, Eigen::Dynamic, 4>> svd(A, Eigen::ComputeFullU | Eigen::ComputeFullV);
         Eigen::Vector4d homo_world_point = svd.matrixV().col(2);
-        homo_world_point(0) /= homo_world_point(3);
-        homo_world_point(1) /= homo_world_point(3);
-        homo_world_point(2) /= homo_world_point(3);
+        for (const auto &corr_point: image_points.at(point_key)) {
+            camera_key = CorrespondenceGraph::GetCameraKeyByPoint(corr_point);
+            if (P.at(camera_key).row(2) * homo_world_point <= 0) {
+                return false;
+            }
+        }
+        homo_world_point /= homo_world_point(3);
         world_point.x() = homo_world_point(0);
         world_point.y() = homo_world_point(1);
         world_point.z() = homo_world_point(2);
-        return world_point;
+        return true;
     }
 
     int test(int a, int b) {
@@ -402,5 +413,19 @@ namespace sfm {
             std::cout << "Have finished the BA of the image " << i << std::endl;
         }
         std::cout << "Have finished the BA" << std::endl;
+    }
+
+    bool
+    IncrementalRebuild::CheckZ(const std::vector<std::shared_ptr<CameraModel>> &cameras,
+                               const Eigen::Matrix<double, 4, 1> &world_point) {
+        for (const auto &camera: cameras) {
+            cv::Mat mat_p = camera->K_ * camera->T_;
+            Eigen::Matrix<double, 3, 4> eigen_p;
+            cv::cv2eigen(mat_p, eigen_p);
+            if (eigen_p.row(2) * world_point <= 0) {
+                return false;
+            }
+        }
+        return true;
     }
 }

@@ -32,9 +32,9 @@ namespace sfm {
 
         std::vector<Eigen::Vector3d> normed_points_;
 
-        pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_;
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_{new pcl::PointCloud<pcl::PointXYZRGB>};
 
-        pcl::visualization::PCLVisualizer viewer_;
+        pcl::visualization::PCLVisualizer::Ptr viewer_{new pcl::visualization::PCLVisualizer("3D Viewer")};
     public:
         PointViewer();
 
