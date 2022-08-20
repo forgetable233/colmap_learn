@@ -14,8 +14,8 @@ namespace sfm {
     }
 
     PointViewer::PointViewer(const std::vector<Eigen::Vector3d> &world_points) {
-        NormalizePoints(world_points);
-        for (const auto &point: this->normed_points_) {
+//        NormalizePoints(world_points);
+        for (const auto &point: world_points) {
             pcl::PointXYZRGB temp;
             temp.x = static_cast<float>(point.x());
             temp.y = static_cast<float>(point.y());
@@ -34,6 +34,9 @@ namespace sfm {
                                    0, 0, 4,
                                    0, 1, 5);
         std::cout << "The size of the point cloud is " << cloud_->size() << std::endl;
+        /*for (const auto &point: this->cloud_->points) {
+            std::cout << point.x << ' ' << point.y << ' ' << point.z << std::endl;
+        }*/
         while (!viewer_->wasStopped()) {
             viewer_->spinOnce(100);
         }

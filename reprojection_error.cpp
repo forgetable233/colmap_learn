@@ -9,5 +9,4 @@ namespace sfm {
 
     ReprojectionError::~ReprojectionError() = default;
 
-
 } // sfm

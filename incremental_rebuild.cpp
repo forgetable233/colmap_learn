@@ -257,7 +257,6 @@ namespace sfm {
             /** 利用SVD加上多视角进行一个多视角三角化的计算，算是传统三角化方法，只是增加了加入点的量 **/
             Eigen::Matrix<double, Eigen::Dynamic, 3> function;
             Eigen::Matrix<double, 3, 4> temp_P;
-
             /** 保存所有图片的P **/
             for (const auto &joined_image: joined_images_) {
                 scene_graph_->GetP(joined_image, temp_P);
@@ -346,6 +345,7 @@ namespace sfm {
         }
         Eigen::JacobiSVD<Eigen::Matrix<double, Eigen::Dynamic, 4>> svd(A, Eigen::ComputeFullU | Eigen::ComputeFullV);
         Eigen::Vector4d homo_world_point = svd.matrixV().col(2);
+        /** 测试是否满足深度为正数 **/
         for (const auto &corr_point: image_points.at(point_key)) {
             camera_key = CorrespondenceGraph::GetCameraKeyByPoint(corr_point);
             if (P.at(camera_key).row(2) * homo_world_point <= 0) {
@@ -356,6 +356,7 @@ namespace sfm {
         world_point.x() = homo_world_point(0);
         world_point.y() = homo_world_point(1);
         world_point.z() = homo_world_point(2);
+        std::cout << world_point.x() << ' ' << world_point.y() << ' ' << world_point.z() << std::endl;
         return true;
     }
 
