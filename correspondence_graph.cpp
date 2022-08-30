@@ -5,9 +5,14 @@
 #include "correspondence_graph.h"
 
 #include <utility>
+#include <time.h>
 
 namespace sfm {
     CorrespondenceGraph::CorrespondenceGraph(std::vector<std::shared_ptr<CameraModel>> &cameras) {
+        clock_t begin;
+        clock_t end;
+        double duration;
+        begin = clock();
         for (int i = 0; i < IMAGE_NUMBER; ++i) {
             for (int j = i + 1; j < IMAGE_NUMBER; ++j) {
                 if (cameras[i]->key_ == cameras[j]->key_) {
@@ -21,8 +26,11 @@ namespace sfm {
                 std::cout << "Have built " << edges_.size() << " edges" << std::endl;
             }
         }
+        end = clock();
         std::cout << "Have found " << edges_.size() << " edges" << std::endl;
-        BuildPointKey();
+        duration = (end - begin) / CLOCKS_PER_SEC;
+        std::cout << "The time costed to build edges is " << duration << "secs" << std::endl;
+        BuildPoints();
     }
 
     CorrespondenceGraph::CorrespondenceGraph(CorrespondenceGraph *_graph) {
@@ -63,16 +71,18 @@ namespace sfm {
     }
 
     // 保存内容有三层，分别是key（图片与位置），图片中的索引，对应的点的坐标
-    // 此处已经完成构建相关性，IncreaseBuild目前不需要
-    void CorrespondenceGraph::BuildPointKey() {
+    // 此处已经完成构建相关性
+    void CorrespondenceGraph::BuildPoints() {
         for (const auto &edge: edges_) {
             int camera1 = edge.second->camera1_->key_;
             int camera2 = edge.second->camera2_->key_;
             if (images_.find(camera1) == images_.end()) {
-                images_.insert(std::pair<int, Image>(camera1, Image(0)));
+                images_.insert(
+                        std::pair<int, Image>(camera1, Image{0}));
             }
             if (images_.find(camera2) == images_.end()) {
-                images_.insert(std::pair<int, Image>(camera2, Image(0)));
+                images_.insert(
+                        std::pair<int, Image>(camera2, Image{0}));
             }
             images_.at(camera1).correspondence_number += edge.second->matches_.size();
             images_.at(camera2).correspondence_number += edge.second->matches_.size();
@@ -82,21 +92,25 @@ namespace sfm {
                 int point_key1 = ComputePointKey(camera1, match.queryIdx);
                 int point_key2 = ComputePointKey(camera2, match.trainIdx);
                 if (points_.find(point_key1) == points_.end()) {
-                    Eigen::Vector2d temp_point;
-                    temp_point
-                            << edge.second->key_points_1_[match.queryIdx].x, edge.second->key_points_1_[match.queryIdx].y;
+                    Eigen::Vector2d temp_point{edge.second->key_points_1_[match.queryIdx].x,
+                                               edge.second->key_points_1_[match.queryIdx].y};
                     std::shared_ptr<Point2d> temp = std::make_shared<Point2d>(match.queryIdx, temp_point);
                     points_.insert(std::pair<int, std::shared_ptr<Point2d>>(point_key1, temp));
+                } else {
+                    std::cerr << "Need to refresh the point key" << std::endl;
                 }
-                points_.at(point_key1)->AddCorrPoint(camera2, match.trainIdx);
                 if (points_.find(point_key2) == points_.end()) {
-                    Eigen::Vector2d temp_point;
-                    temp_point
-                            << edge.second->key_points_2_[match.trainIdx].x, edge.second->key_points_1_[match.trainIdx].y;
+                    Eigen::Vector2d temp_point{edge.second->key_points_2_[match.trainIdx].x,
+                                               edge.second->key_points_1_[match.trainIdx].y};
                     std::shared_ptr<Point2d> temp = std::make_shared<Point2d>(match.trainIdx, temp_point);
                     points_.insert(std::pair<int, std::shared_ptr<Point2d>>(point_key2, temp));
+                } else {
+                    std::cerr << "Need to refresh the point key" << std::endl;
                 }
-                points_.at(point_key2)->AddCorrPoint(camera1, match.queryIdx);
+                if (!points_.at(point_key1)->AddCorrPoint(camera2, match.trainIdx) ||
+                    points_.at(point_key2)->AddCorrPoint(camera1, match.queryIdx)) {
+                    std::cerr << "Unable to add the corr" << std::endl;
+                }
             }
         }
     }

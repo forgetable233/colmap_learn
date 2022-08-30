@@ -356,7 +356,6 @@ namespace sfm {
         world_point.x() = homo_world_point(0);
         world_point.y() = homo_world_point(1);
         world_point.z() = homo_world_point(2);
-        std::cout << world_point.x() << ' ' << world_point.y() << ' ' << world_point.z() << std::endl;
         return true;
     }
 

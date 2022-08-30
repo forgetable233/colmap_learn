@@ -34,9 +34,6 @@ namespace sfm {
                                    0, 0, 4,
                                    0, 1, 5);
         std::cout << "The size of the point cloud is " << cloud_->size() << std::endl;
-        /*for (const auto &point: this->cloud_->points) {
-            std::cout << point.x << ' ' << point.y << ' ' << point.z << std::endl;
-        }*/
         while (!viewer_->wasStopped()) {
             viewer_->spinOnce(100);
         }

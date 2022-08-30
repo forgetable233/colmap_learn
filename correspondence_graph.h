@@ -63,7 +63,7 @@ namespace sfm {
 
         void IncreaseSearch();
 
-        void BuildPointKey();
+        void BuildPoints();
 
         void GetInliers(int index,
                         std::vector<cv::Point2f> &clean_points1,
