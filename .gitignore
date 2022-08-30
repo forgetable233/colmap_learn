@@ -93,3 +93,4 @@ cmake-build-debug/
 *.iws
 *.iml
 *.ipr
+*.xml
