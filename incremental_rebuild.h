@@ -17,6 +17,7 @@
 #include <Eigen/Dense>
 #include <opencv2/opencv.hpp>
 #include <opencv2/core.hpp>
+#include <opencv2/core/eigen.hpp>
 #include <ceres/ceres.h>
 
 #include "camera_model.h"
@@ -38,6 +39,7 @@ namespace sfm {
         kSVD = 0,
         kRANSAC = 1
     };
+
     class IncrementalRebuild {
     private:
         std::shared_ptr<CorrespondenceGraph> scene_graph_;
@@ -50,9 +52,12 @@ namespace sfm {
 
         ~IncrementalRebuild() = default;
 
-        explicit IncrementalRebuild(CorrespondenceGraph* _graph);
+        explicit IncrementalRebuild(CorrespondenceGraph *_graph);
 
         bool Init(int index);
+
+        bool CheckZ(const std::vector<std::shared_ptr<CameraModel>> &cameras,
+                    const Eigen::Matrix<double, 4, 1> &world_point);
 
         void SingalViewTriangulation(int index, TrianguleType type);
 
@@ -64,7 +69,8 @@ namespace sfm {
 
         void BA();
 
-        Eigen::Vector3d SVDComputeWorldPoint(int point_key,
+        bool SVDComputeWorldPoint(int point_key,
+                                             Eigen::Vector3d &world_point,
                                              const std::unordered_map<int, std::vector<int>> &image_points,
                                              const std::map<int, Eigen::Matrix<double, 3, 4>> &P);
 
@@ -76,8 +82,8 @@ namespace sfm {
 
         void ShowMatchResult(int begin_index);
 
-        void CheckZDepthAndAddWorldPoints(const std::shared_ptr<CameraModel>& camera1,
-                                          const std::shared_ptr<CameraModel>& camera2,
+        void CheckZDepthAndAddWorldPoints(const std::shared_ptr<CameraModel> &camera1,
+                                          const std::shared_ptr<CameraModel> &camera2,
                                           cv::Mat &pst_4d);
 
         void CheckZDepthAndAddWorldPoints(const std::unordered_map<int, std::vector<int>> &points,

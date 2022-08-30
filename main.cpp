@@ -1,6 +1,7 @@
 #include <iostream>
 #include <algorithm>
 #include <string>
+#include <time.h>
 
 #include "img_loader.h"
 #include "camera_model.h"
@@ -113,6 +114,8 @@ void CheckFMatrix(std::vector<std::shared_ptr<sfm::CameraModel>> &cameras) {
 int main() {
     int scene_graph[IMAGE_NUMBER][IMAGE_NUMBER];
 //    std::string file_path_linux = "/home/dcr/codes/CorC++/colmap/testImage/gerrard-hall/newimage/";
+    clock_t begin;
+    clock_t end;
     std::string file_path_linux = "../newimage/";
     std::vector<std::shared_ptr<sfm::CameraModel>> cameras;
 

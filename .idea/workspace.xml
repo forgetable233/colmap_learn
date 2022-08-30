@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="CMakePresetLoader">{
+  &quot;useNewFormat&quot;: true
+}</component>
+  <component name="CMakeReloadState">
+    <option name="reloaded" value="true" />
+  </component>
+  <component name="CMakeRunConfigurationManager">
+    <generated />
+  </component>
+  <component name="CMakeSettings" AUTO_RELOAD="true">
+    <configurations>
+      <configuration PROFILE_NAME="Debug" ENABLED="true" CONFIG_NAME="Debug" />
+    </configurations>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="00e7edfa-187b-4a21-9a73-3aca43181e93" name="变更" comment="变更">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/correspondence_graph.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/correspondence_graph.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/correspondence_graph.h" beforeDir="false" afterPath="$PROJECT_DIR$/correspondence_graph.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/img_loader.cc" beforeDir="false" afterPath="$PROJECT_DIR$/img_loader.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/incremental_rebuild.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/incremental_rebuild.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/incremental_rebuild.h" beforeDir="false" afterPath="$PROJECT_DIR$/incremental_rebuild.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/point_viewer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/point_viewer.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/point_viewer.h" beforeDir="false" afterPath="$PROJECT_DIR$/point_viewer.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reprojection_error.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/reprojection_error.cpp" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectApplicationVersion">
+    <option name="ide" value="CLion" />
+    <option name="majorVersion" value="2022" />
+    <option name="minorVersion" value="1.3" />
+  </component>
+  <component name="ProjectId" id="2BbprvHRpViyVPhsz7DFhZ7yIt5" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/dcr/CLionProjects/sfm&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.project.grazie&quot;,
+    &quot;structure.view.defaults.are.configured&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="应用程序级" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="默认任务">
+      <changelist id="00e7edfa-187b-4a21-9a73-3aca43181e93" name="变更" comment="" />
+      <created>1657184840979</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1657184840979</updated>
+      <workItem from="1657184842117" duration="745000" />
+      <workItem from="1657311490125" duration="4518000" />
+      <workItem from="1657355662540" duration="14303000" />
+      <workItem from="1657440732004" duration="15767000" />
+      <workItem from="1657468815232" duration="1553000" />
+      <workItem from="1657504327413" duration="1801000" />
+      <workItem from="1657510547229" duration="706000" />
+      <workItem from="1657550050259" duration="17830000" />
+      <workItem from="1657588876891" duration="34030000" />
+      <workItem from="1657760954848" duration="13127000" />
+      <workItem from="1657788131567" duration="1352000" />
+      <workItem from="1657789501330" duration="9760000" />
+      <workItem from="1657802035395" duration="1383000" />
+      <workItem from="1657803645771" duration="2741000" />
+      <workItem from="1657848365027" duration="9890000" />
+      <workItem from="1657862013717" duration="24838000" />
+      <workItem from="1657964346884" duration="12869000" />
+      <workItem from="1657986389599" duration="1291000" />
+      <workItem from="1658023073468" duration="3684000" />
+      <workItem from="1658408841287" duration="32000" />
+      <workItem from="1658412676794" duration="109000" />
+      <workItem from="1658632290690" duration="3192000" />
+      <workItem from="1658636425918" duration="357000" />
+      <workItem from="1658637196497" duration="405000" />
+      <workItem from="1658638179089" duration="3246000" />
+      <workItem from="1658646667757" duration="1884000" />
+      <workItem from="1658648802333" duration="1297000" />
+      <workItem from="1658665023609" duration="1237000" />
+      <workItem from="1658666918306" duration="335000" />
+      <workItem from="1658667353957" duration="23000" />
+      <workItem from="1658667385219" duration="94000" />
+      <workItem from="1658667508629" duration="679000" />
+      <workItem from="1658668479661" duration="1000" />
+      <workItem from="1658668888658" duration="42000" />
+      <workItem from="1658669069832" duration="37000" />
+      <workItem from="1658669113824" duration="5700000" />
+      <workItem from="1658730798895" duration="10673000" />
+      <workItem from="1658747481445" duration="11848000" />
+      <workItem from="1658798102944" duration="7655000" />
+      <workItem from="1658818106741" duration="9848000" />
+      <workItem from="1658835223138" duration="18724000" />
+      <workItem from="1658897258552" duration="17590000" />
+      <workItem from="1658996012633" duration="16624000" />
+      <workItem from="1659070989692" duration="199000" />
+      <workItem from="1659071194487" duration="241000" />
+      <workItem from="1659076276766" duration="15500000" />
+      <workItem from="1659255329017" duration="2985000" />
+      <workItem from="1659267988273" duration="288000" />
+      <workItem from="1659268759129" duration="706000" />
+      <workItem from="1659271310700" duration="23000" />
+      <workItem from="1659353646914" duration="19465000" />
+      <workItem from="1659448354929" duration="3127000" />
+      <workItem from="1659451742432" duration="31000" />
+      <workItem from="1659511005802" duration="18467000" />
+      <workItem from="1659620249422" duration="1000" />
+      <workItem from="1659690800784" duration="11761000" />
+      <workItem from="1660134138497" duration="1956000" />
+      <workItem from="1660637591053" duration="3650000" />
+      <workItem from="1660664617761" duration="299000" />
+      <workItem from="1660919323982" duration="2966000" />
+      <workItem from="1660922952009" duration="3638000" />
+      <workItem from="1661849623702" duration="382000" />
+      <workItem from="1661851593631" duration="2639000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+        <entry key="c89949b6-7fef-4f57-b108-82276e114e8f">
+          <value>
+            <State>
+              <option name="SHOW_ONLY_AFFECTED_CHANGES" value="true" />
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="HEAD" />
+                      </list>
+                    </value>
+                  </entry>
+                  <entry key="roots">
+                    <value>
+                      <list>
+                        <option value="$PROJECT_DIR$" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="OPEN_GENERIC_TABS">
+      <map>
+        <entry key="c89949b6-7fef-4f57-b108-82276e114e8f" value="TOOL_WINDOW" />
+      </map>
+    </option>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>
