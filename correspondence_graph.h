@@ -27,7 +27,7 @@ namespace sfm {
     private:
         // 保存每一张图片的相关性，用来选择最佳起始图片，同时确定图片是否已经注册过
         struct Image {
-            explicit Image(unsigned int _corr) : correspondence_number(_corr) {}
+            explicit Image(int _key, unsigned int _corr) : correspondence_number(_corr), key(_key) {}
 
             int key;
 
@@ -113,6 +113,8 @@ namespace sfm {
         bool ImageHasRegistered(int index);
 
         bool PointHasRegistered(int point_key);
+
+        void SetPointRegistered(int point_key);
 
         void SetPairJoined(int index);
 

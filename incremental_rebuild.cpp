@@ -180,7 +180,8 @@ namespace sfm {
                 camera_key = CorrespondenceGraph::GetCameraKeyByPoint(corrs);
                 cameras.emplace_back(scene_graph_->GetCameraModel(camera_key));
             }
-            std::shared_ptr<Point3d> world_ptr = std::make_shared<Point3d>(world_points[i++]);
+            std::shared_ptr<Point3d> world_ptr = std::make_shared<Point3d>(world_points[i + 1]);
+            i++;
             scene_graph_->AddWorldPoints(point.first, point.second, world_ptr);
             world_point_key = ComputeWorldPointKey();
             world_points_.insert(std::pair<int, std::shared_ptr<Point3d>>(world_point_key, nullptr));
@@ -246,8 +247,14 @@ namespace sfm {
         scene_graph_->ComputeScore(camera_key);
     }
 
+    /**
+     * 将一帧新的图片加入到图片中，计算出对应的所有的点的坐标
+     * @param camera_key
+     * @param type
+     */
     void IncrementalRebuild::MultiViewTriangulation(int camera_key, MultiViewType type) {
         std::vector<Eigen::Vector3d> world_points;
+        /** 其中int为对应的点的key值， **/
         std::unordered_map<int, std::vector<int>> new_image_points;
         std::map<int, Eigen::Matrix<double, 3, 4>> P;
         for (const auto &joined_image: joined_images_) {
@@ -258,15 +265,16 @@ namespace sfm {
             Eigen::Matrix<double, Eigen::Dynamic, 3> function;
             Eigen::Matrix<double, 3, 4> temp_P;
             /** 保存所有图片的P **/
+            P.insert(std::pair<int, Eigen::Matrix<double, 3, 4>>(camera_key, temp_P));
             for (const auto &joined_image: joined_images_) {
                 scene_graph_->GetP(joined_image, temp_P);
                 P.insert(std::pair<int, Eigen::Matrix<double, 3, 4>>(joined_image, temp_P));
             }
-            P.insert(std::pair<int, Eigen::Matrix<double, 3, 4>>(camera_key, temp_P));
-
             for (const auto &image_point: new_image_points) {
                 Eigen::Vector3d world_point;
                 if (SVDComputeWorldPoint(image_point.first, world_point, new_image_points, P)) {
+                    /*if (fabs(world_point.x()) >= 0.001 && fabs(world_point.y()) >= 0.001 && fabs(world_point.z()) >= 0.001) {
+                    }*/
                     world_points.push_back(world_point);
                 }
             }
@@ -300,6 +308,8 @@ namespace sfm {
                         std::vector<int> temp;
                         points.insert(std::pair<int, std::vector<int>>(new_point_key, temp));
                     }
+                    scene_graph_->SetPointRegistered(new_point_key);
+                    scene_graph_->SetPointRegistered(old_point_key);
                     points.at(new_point_key).push_back(old_point_key);
                 }
             }
@@ -313,6 +323,8 @@ namespace sfm {
                         std::vector<int> temp;
                         points.insert(std::pair<int, std::vector<int>>(new_point_key, temp));
                     }
+                    scene_graph_->SetPointRegistered(new_point_key);
+                    scene_graph_->SetPointRegistered(old_point_key);
                     points.at(new_point_key).push_back(old_point_key);
                 }
             }
@@ -323,27 +335,28 @@ namespace sfm {
                                                   Eigen::Vector3d &world_point,
                                                   const std::unordered_map<int, std::vector<int>> &image_points,
                                                   const std::map<int, Eigen::Matrix<double, 3, 4>> &P) {
-        Eigen::Matrix<double, Eigen::Dynamic, 4> A((1 + image_points.at(point_key).size()) * 2, 4);
+        int i = 0;
+        int camera_key = CorrespondenceGraph::GetCameraKeyByPoint(point_key);
+        auto camera = scene_graph_->GetCameraModel(camera_key);
         Eigen::Matrix3d K;
         Eigen::Vector2d pixel_point;
-        int camera_key = CorrespondenceGraph::GetCameraKeyByPoint(point_key);
-        int i = 0;
-        auto camera = scene_graph_->GetCameraModel(camera_key);
+        Eigen::Matrix<double, Eigen::Dynamic, 4> func((1 + image_points.at(point_key).size()) * 2, 4);
+        /** 获得目标点的pixel坐标 **/
         scene_graph_->GetPixelPoint(point_key, pixel_point);
         cv::cv2eigen(camera->K_, K);
         /** 归一化 **/
-        Eigen::Vector3d temp = K.inverse() * pixel_point.homogeneous();
-        pixel_point.x() = temp.x() / temp.z();
-        pixel_point.y() = temp.y() / temp.z();
-        A.block<1, 4>(i++, 0) = P.at(camera_key).row(2) * pixel_point.x() - P.at(camera_key).row(0);
-        A.block<1, 4>(i++, 0) = P.at(camera_key).row(2) * pixel_point.y() - P.at(camera_key).row(1);
+        Eigen::Vector3d homo_point = K.inverse() * pixel_point.homogeneous();
+        pixel_point.x() = homo_point.x() / homo_point.z();
+        pixel_point.y() = homo_point.y() / homo_point.z();
+        func.block<1, 4>(i++, 0) = P.at(camera_key).row(2) * pixel_point.x() - P.at(camera_key).row(0);
+        func.block<1, 4>(i++, 0) = P.at(camera_key).row(2) * pixel_point.y() - P.at(camera_key).row(1);
         for (const auto &corr_point: image_points.at(point_key)) {
             camera_key = CorrespondenceGraph::GetCameraKeyByPoint(corr_point);
             scene_graph_->GetPixelPoint(corr_point, pixel_point);
-            A.block<1, 4>(i++, 0) = P.at(camera_key).row(2) * pixel_point.x() - P.at(camera_key).row(0);
-            A.block<1, 4>(i++, 0) = P.at(camera_key).row(2) * pixel_point.y() - P.at(camera_key).row(1);
+            func.block<1, 4>(i++, 0) = P.at(camera_key).row(2) * pixel_point.x() - P.at(camera_key).row(0);
+            func.block<1, 4>(i++, 0) = P.at(camera_key).row(2) * pixel_point.y() - P.at(camera_key).row(1);
         }
-        Eigen::JacobiSVD<Eigen::Matrix<double, Eigen::Dynamic, 4>> svd(A, Eigen::ComputeFullU | Eigen::ComputeFullV);
+        Eigen::JacobiSVD<Eigen::Matrix<double, Eigen::Dynamic, 4>> svd(func, Eigen::ComputeFullU | Eigen::ComputeFullV);
         Eigen::Vector4d homo_world_point = svd.matrixV().col(2);
         /** 测试是否满足深度为正数 **/
         for (const auto &corr_point: image_points.at(point_key)) {
@@ -357,10 +370,6 @@ namespace sfm {
         world_point.y() = homo_world_point(1);
         world_point.z() = homo_world_point(2);
         return true;
-    }
-
-    int test(int a, int b) {
-        return a + b;
     }
 
     /**

@@ -51,7 +51,7 @@ namespace sfm {
             cv::pyrDown(down_sample_4,
                         down_sample_8,
                         cv::Size{down_sample_4.cols / 2, down_sample_4.rows / 2});
-            cv::cvtColor(down_sample_2, grey_image, cv::COLOR_BGR2GRAY);
+            cv::cvtColor(down_sample_8, grey_image, cv::COLOR_BGR2GRAY);
 
             _cameras.emplace_back(std::make_shared<CameraModel>(grey_image, number));
             number++;

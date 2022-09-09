@@ -56,7 +56,13 @@ namespace sfm {
 
         int GetCorrNumber();
 
+        int GetCameraKey(int point_key);
+
+        int GetPointKey();
+
         static int ComputePointKey(int camera, int index);
+
+        void SetRegistered(int point_key);
 
         void GetCorrs(std::vector<int> &corrs);
 

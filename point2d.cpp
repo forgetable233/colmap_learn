@@ -45,6 +45,10 @@ namespace sfm {
         return (camera * 100000 + index);
     }
 
+    int Point2d::GetCameraKey(int point_key) {
+//        return point_key /
+    }
+
     void Point2d::AddWorldPoints(std::shared_ptr<Point3d> point_ptr) {
         this->registered = true;
         this->world_point_ = point_ptr;
@@ -60,6 +64,10 @@ namespace sfm {
 
     bool Point2d::HasRegistered() const {
         return this->registered;
+    }
+
+    void Point2d::SetRegistered(int point_key) {
+        this->registered = true;
     }
 
     void Point2d::AddRelatedPoint(std::vector<cv::Point3f> &world_points,
