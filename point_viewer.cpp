@@ -14,8 +14,8 @@ namespace sfm {
     }
 
     PointViewer::PointViewer(const std::vector<Eigen::Vector3d> &world_points) {
-//        NormalizePoints(world_points);
-        for (const auto &point: world_points) {
+        NormalizePoints(world_points);
+        for (const auto &point: normed_points_) {
             pcl::PointXYZRGB temp;
             temp.x = static_cast<float>(point.x());
             temp.y = static_cast<float>(point.y());
