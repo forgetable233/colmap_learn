@@ -37,6 +37,8 @@ namespace sfm {
         std::shared_ptr<Point3d> world_point_;
 
         bool registered = false;
+
+        bool inlier_ = true;
     public:
         Point2d();
 
@@ -56,7 +58,13 @@ namespace sfm {
 
         int GetCorrNumber();
 
+        int GetCameraKey(int point_key);
+
+        int GetPointKey();
+
         static int ComputePointKey(int camera, int index);
+
+        void SetRegistered(int point_key);
 
         void GetCorrs(std::vector<int> &corrs);
 

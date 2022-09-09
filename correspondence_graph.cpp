@@ -5,7 +5,7 @@
 #include "correspondence_graph.h"
 
 #include <utility>
-#include <time.h>
+#include <ctime>
 
 namespace sfm {
     CorrespondenceGraph::CorrespondenceGraph(std::vector<std::shared_ptr<CameraModel>> &cameras) {
@@ -18,11 +18,11 @@ namespace sfm {
                 if (cameras[i]->key_ == cameras[j]->key_) {
                     continue;
                 }
-                int key = ComputeEdgeKey(cameras[i]->key_, cameras[j]->key_);
-                scene_graph_.insert(std::pair<int, int>(key / 100, key % 100));
+                int edge_key = ComputeEdgeKey(cameras[i]->key_, cameras[j]->key_);
+                scene_graph_.insert(std::pair<int, int>(edge_key / 100, edge_key % 100));
                 edges_.insert(std::pair<int, std::shared_ptr<Edge>>
-                                      (key, std::make_shared<Edge>(cameras[i], cameras[j])));
-                edges_.at(key)->key_ = key;
+                                      (edge_key, std::make_shared<Edge>(cameras[i], cameras[j])));
+                edges_.at(edge_key)->key_ = edge_key;
                 std::cout << "Have built " << edges_.size() << " edges" << std::endl;
             }
         }
@@ -78,38 +78,40 @@ namespace sfm {
             int camera2 = edge.second->camera2_->key_;
             if (images_.find(camera1) == images_.end()) {
                 images_.insert(
-                        std::pair<int, Image>(camera1, Image{0}));
+                        std::pair<int, Image>(camera1, Image{camera1, 0}));
             }
             if (images_.find(camera2) == images_.end()) {
                 images_.insert(
-                        std::pair<int, Image>(camera2, Image{0}));
+                        std::pair<int, Image>(camera2, Image{camera2, 0}));
             }
             images_.at(camera1).correspondence_number += edge.second->matches_.size();
             images_.at(camera2).correspondence_number += edge.second->matches_.size();
             // 目前不需要迭代搜索，因为查找方式本质上还是穷举查找，在之后数据集增加后可能需要改变，同时存在外点的干扰
             // TODO 这里有对外点的过滤问题
+            int i = 0;
             for (const auto &match: edge.second->matches_) {
-                int point_key1 = ComputePointKey(camera1, match.queryIdx);
-                int point_key2 = ComputePointKey(camera2, match.trainIdx);
-                if (points_.find(point_key1) == points_.end()) {
-                    Eigen::Vector2d temp_point{edge.second->key_points_1_[match.queryIdx].x,
-                                               edge.second->key_points_1_[match.queryIdx].y};
-                    std::shared_ptr<Point2d> temp = std::make_shared<Point2d>(match.queryIdx, temp_point);
-                    points_.insert(std::pair<int, std::shared_ptr<Point2d>>(point_key1, temp));
-                } else {
-                    std::cerr << "Need to refresh the point key" << std::endl;
-                }
-                if (points_.find(point_key2) == points_.end()) {
-                    Eigen::Vector2d temp_point{edge.second->key_points_2_[match.trainIdx].x,
-                                               edge.second->key_points_1_[match.trainIdx].y};
-                    std::shared_ptr<Point2d> temp = std::make_shared<Point2d>(match.trainIdx, temp_point);
-                    points_.insert(std::pair<int, std::shared_ptr<Point2d>>(point_key2, temp));
-                } else {
-                    std::cerr << "Need to refresh the point key" << std::endl;
-                }
-                if (!points_.at(point_key1)->AddCorrPoint(camera2, match.trainIdx) ||
-                    points_.at(point_key2)->AddCorrPoint(camera1, match.queryIdx)) {
-                    std::cerr << "Unable to add the corr" << std::endl;
+                if (edge.second->is_inliers_[i]) {
+                    int point_key1 = ComputePointKey(camera1, match.queryIdx);
+                    int point_key2 = ComputePointKey(camera2, match.trainIdx);
+                    if (points_.find(point_key1) == points_.end()) {
+                        Eigen::Vector2d temp_point{edge.second->key_points_1_[match.queryIdx].x,
+                                                   edge.second->key_points_1_[match.queryIdx].y};
+                        std::shared_ptr<Point2d> temp = std::make_shared<Point2d>(match.queryIdx, temp_point);
+                        points_.insert(std::pair<int, std::shared_ptr<Point2d>>(point_key1, temp));
+                    }
+                    if (points_.find(point_key2) == points_.end()) {
+                        Eigen::Vector2d temp_point{edge.second->key_points_2_[match.trainIdx].x,
+                                                   edge.second->key_points_1_[match.trainIdx].y};
+                        std::shared_ptr<Point2d> temp = std::make_shared<Point2d>(match.trainIdx, temp_point);
+                        points_.insert(std::pair<int, std::shared_ptr<Point2d>>(point_key2, temp));
+                    }
+                    points_.at(point_key1)->AddCorrPoint(camera2, match.trainIdx);
+                    points_.at(point_key2)->AddCorrPoint(camera1, match.queryIdx);
+                    i++;
+                    /*if (!points_.at(point_key1)->AddCorrPoint(camera2, match.trainIdx) ||
+                        !points_.at(point_key2)->AddCorrPoint(camera1, match.queryIdx)) {
+                        std::cerr << "Unable to add the corr" << std::endl;
+                    }*/
                 }
             }
         }
@@ -341,16 +343,6 @@ namespace sfm {
         return nullptr;
     }
 
-    bool CorrespondenceGraph::PointHasRegistered(int point_key) {
-        return points_.at(point_key)->HasRegistered();
-    }
-
-    void CorrespondenceGraph::GetP(int camera_key, Eigen::Matrix<double, 3, 4> &P) {
-        auto camera = GetCameraModel(camera_key);
-        cv::Mat temp_P = camera->K_ * camera->T_;
-        cv::cv2eigen(temp_P, P);
-    }
-
     bool CorrespondenceGraph::GetPixelPoint(int point_key, Eigen::Vector2d &point) {
         if (points_.find(point_key) == points_.end()) {
             std::cerr << "Unable to find the target point" << std::endl;
@@ -358,6 +350,20 @@ namespace sfm {
         }
         points_.at(point_key)->GetPixelPoint(point);
         return true;
+    }
+
+    bool CorrespondenceGraph::PointHasRegistered(int point_key) {
+        return points_.at(point_key)->HasRegistered();
+    }
+
+    void CorrespondenceGraph::SetPointRegistered(int point_key) {
+        points_.at(point_key)->SetRegistered(point_key);
+    }
+
+    void CorrespondenceGraph::GetP(int camera_key, Eigen::Matrix<double, 3, 4> &P) {
+        auto camera = GetCameraModel(camera_key);
+        cv::Mat temp_P = camera->K_ * camera->T_;
+        cv::cv2eigen(temp_P, P);
     }
 
     int CorrespondenceGraph::GetCameraKeyByPoint(int point_key) {

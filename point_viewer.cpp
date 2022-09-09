@@ -33,7 +33,18 @@ namespace sfm {
         viewer_->setCameraPosition(1, 1, 1,
                                    0, 0, 4,
                                    0, 1, 5);
-        std::cout << "The size of the point cloud is " << cloud_->size() << std::endl;
+        std::cout << "The size of the point cloud is " << cloud_->points.size() << std::endl;
+        double x;
+        double y;
+        double z;
+        for (const auto &point: cloud_->points) {
+            x += point.x;
+            y += point.y;
+            z += point.z;
+        }
+        x /= static_cast<double>(cloud_->points.size());
+        y /= static_cast<double>(cloud_->points.size());
+        z /= static_cast<double>(cloud_->points.size());
         while (!viewer_->wasStopped()) {
             viewer_->spinOnce(100);
         }
