@@ -21,13 +21,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="00e7edfa-187b-4a21-9a73-3aca43181e93" name="变更" comment="变更">
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/correspondence_graph.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/correspondence_graph.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/correspondence_graph.h" beforeDir="false" afterPath="$PROJECT_DIR$/correspondence_graph.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/img_loader.cc" beforeDir="false" afterPath="$PROJECT_DIR$/img_loader.cc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/incremental_rebuild.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/incremental_rebuild.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/point2d.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/point2d.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/edge.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/edge.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/edge.h" beforeDir="false" afterPath="$PROJECT_DIR$/edge.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/point2d.h" beforeDir="false" afterPath="$PROJECT_DIR$/point2d.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/point_viewer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/point_viewer.cpp" afterDir="false" />
     </list>

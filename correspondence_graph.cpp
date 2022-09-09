@@ -88,27 +88,31 @@ namespace sfm {
             images_.at(camera2).correspondence_number += edge.second->matches_.size();
             // 目前不需要迭代搜索，因为查找方式本质上还是穷举查找，在之后数据集增加后可能需要改变，同时存在外点的干扰
             // TODO 这里有对外点的过滤问题
+            int i = 0;
             for (const auto &match: edge.second->matches_) {
-                int point_key1 = ComputePointKey(camera1, match.queryIdx);
-                int point_key2 = ComputePointKey(camera2, match.trainIdx);
-                if (points_.find(point_key1) == points_.end()) {
-                    Eigen::Vector2d temp_point{edge.second->key_points_1_[match.queryIdx].x,
-                                               edge.second->key_points_1_[match.queryIdx].y};
-                    std::shared_ptr<Point2d> temp = std::make_shared<Point2d>(match.queryIdx, temp_point);
-                    points_.insert(std::pair<int, std::shared_ptr<Point2d>>(point_key1, temp));
+                if (edge.second->is_inliers_[i]) {
+                    int point_key1 = ComputePointKey(camera1, match.queryIdx);
+                    int point_key2 = ComputePointKey(camera2, match.trainIdx);
+                    if (points_.find(point_key1) == points_.end()) {
+                        Eigen::Vector2d temp_point{edge.second->key_points_1_[match.queryIdx].x,
+                                                   edge.second->key_points_1_[match.queryIdx].y};
+                        std::shared_ptr<Point2d> temp = std::make_shared<Point2d>(match.queryIdx, temp_point);
+                        points_.insert(std::pair<int, std::shared_ptr<Point2d>>(point_key1, temp));
+                    }
+                    if (points_.find(point_key2) == points_.end()) {
+                        Eigen::Vector2d temp_point{edge.second->key_points_2_[match.trainIdx].x,
+                                                   edge.second->key_points_1_[match.trainIdx].y};
+                        std::shared_ptr<Point2d> temp = std::make_shared<Point2d>(match.trainIdx, temp_point);
+                        points_.insert(std::pair<int, std::shared_ptr<Point2d>>(point_key2, temp));
+                    }
+                    points_.at(point_key1)->AddCorrPoint(camera2, match.trainIdx);
+                    points_.at(point_key2)->AddCorrPoint(camera1, match.queryIdx);
+                    i++;
+                    /*if (!points_.at(point_key1)->AddCorrPoint(camera2, match.trainIdx) ||
+                        !points_.at(point_key2)->AddCorrPoint(camera1, match.queryIdx)) {
+                        std::cerr << "Unable to add the corr" << std::endl;
+                    }*/
                 }
-                if (points_.find(point_key2) == points_.end()) {
-                    Eigen::Vector2d temp_point{edge.second->key_points_2_[match.trainIdx].x,
-                                               edge.second->key_points_1_[match.trainIdx].y};
-                    std::shared_ptr<Point2d> temp = std::make_shared<Point2d>(match.trainIdx, temp_point);
-                    points_.insert(std::pair<int, std::shared_ptr<Point2d>>(point_key2, temp));
-                }
-                points_.at(point_key1)->AddCorrPoint(camera2, match.trainIdx);
-                points_.at(point_key2)->AddCorrPoint(camera1, match.queryIdx);
-                /*if (!points_.at(point_key1)->AddCorrPoint(camera2, match.trainIdx) ||
-                    !points_.at(point_key2)->AddCorrPoint(camera1, match.queryIdx)) {
-                    std::cerr << "Unable to add the corr" << std::endl;
-                }*/
             }
         }
     }

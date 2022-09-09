@@ -35,6 +35,8 @@ namespace sfm {
 
         std::vector<cv::DMatch> matches_;
 
+        std::vector<bool> is_inliers_;
+
         std::vector<cv::Point2i> key_points_1_;
         std::vector<cv::Point2i> key_points_2_;
 
@@ -68,8 +70,7 @@ namespace sfm {
 
         void GetPoints();
 
-        void CleanOutliers(std::vector<cv::Point2f> &outliers_point1, std::vector<cv::Point2f> &outliers_point2,
-                           std::vector<cv::Point2f> &inliers_point1, std::vector<cv::Point2f> &inliers_point2);
+        void CleanOutliers();
 
         /**
          * check if the match satisfy the epipolar geometry

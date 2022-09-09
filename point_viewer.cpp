@@ -45,7 +45,6 @@ namespace sfm {
         x /= static_cast<double>(cloud_->points.size());
         y /= static_cast<double>(cloud_->points.size());
         z /= static_cast<double>(cloud_->points.size());
-        std::cout << x <<  ' ' << y << ' ' << z << std::endl;
         while (!viewer_->wasStopped()) {
             viewer_->spinOnce(100);
         }

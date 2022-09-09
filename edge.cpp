@@ -80,6 +80,7 @@ namespace sfm {
             GetPoints();
             ComputeMatrix();
             EstimatePose();
+            CleanOutliers();
         }
         return true;
     }
@@ -227,21 +228,27 @@ namespace sfm {
         camera2_->SetCameraPose(R, _t);
     }
 
-    void Edge::CleanOutliers(std::vector<cv::Point2f> &outliers_point1, std::vector<cv::Point2f> &outliers_point2,
-                             std::vector<cv::Point2f> &inliers_point1, std::vector<cv::Point2f> &inliers_point2) {
-        for (int i = 0; i < outliers_point1.size(); ++i) {
-            cv::Mat temp_point1 = (cv::Mat_<float>(3, 1) << outliers_point1[i].x, outliers_point1[i].y, 1.0f);
-            cv::Mat temp_point2 = (cv::Mat_<float>(3, 1) << outliers_point2[i].x, outliers_point2[i].y, 1.0f);
+    void Edge::CleanOutliers() {
+        is_inliers_.resize(this->matches_.size());
+        for (int i = 0; i < matches_.size(); ++i) {
+            cv::Mat temp_point1 = (cv::Mat_<float>(3, 1) <<
+                    camera1_->key_points_[matches_[i].trainIdx].pt.x,
+                    camera1_->key_points_[matches_[i].trainIdx].pt.y,
+                    1.0f);
+            cv::Mat temp_point2 = (cv::Mat_<float>(3, 1) <<
+                    camera2_->key_points_[matches_[i].queryIdx].pt.x,
+                    camera2_->key_points_[matches_[i].queryIdx].pt.x,
+                    1.0f);
 
             temp_point1.convertTo(temp_point1, e_m_.type());
             temp_point2.convertTo(temp_point2, e_m_.type());
 
-            cv::Mat check_result = temp_point2.t() * e_m_ * temp_point1;
-            if (check_result.at<float>(0, 0) <= ESSENTIAL_INLIER_THRESHOLD) {
-                inliers_point1.emplace_back(outliers_point1[i].x, outliers_point1[i].y);
-                inliers_point2.emplace_back(outliers_point2[i].x, outliers_point2[i].y);
+            cv::Mat check_result = temp_point1.t() * e_m_ * temp_point2;
+            if (check_result.at<float>(0, 0) > ESSENTIAL_INLIER_THRESHOLD) {
+                is_inliers_[i] = false;
+            } else {
+                e_m_inliers_++;
             }
         }
-        std::cout << inliers_point1.size() << ' ' << inliers_point2.size() << std::endl;
     }
 } // sfm

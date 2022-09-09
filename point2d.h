@@ -37,6 +37,8 @@ namespace sfm {
         std::shared_ptr<Point3d> world_point_;
 
         bool registered = false;
+
+        bool inlier_ = true;
     public:
         Point2d();
 
