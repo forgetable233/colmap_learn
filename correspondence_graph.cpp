@@ -74,6 +74,7 @@ namespace sfm {
     // 此处已经完成构建相关性
     void CorrespondenceGraph::BuildPoints() {
         for (const auto &edge: edges_) {
+            // 构建对应的camera模型
             int camera1 = edge.second->camera1_->key_;
             int camera2 = edge.second->camera2_->key_;
             if (images_.find(camera1) == images_.end()) {
@@ -90,7 +91,7 @@ namespace sfm {
             // TODO 这里有对外点的过滤问题
             int i = 0;
             for (const auto &match: edge.second->matches_) {
-                if (edge.second->is_inliers_[i]) {
+                if (edge.second->is_E_inliers_[i++]) {
                     int point_key1 = ComputePointKey(camera1, match.queryIdx);
                     int point_key2 = ComputePointKey(camera2, match.trainIdx);
                     if (points_.find(point_key1) == points_.end()) {
@@ -107,7 +108,6 @@ namespace sfm {
                     }
                     points_.at(point_key1)->AddCorrPoint(camera2, match.trainIdx);
                     points_.at(point_key2)->AddCorrPoint(camera1, match.queryIdx);
-                    i++;
                     /*if (!points_.at(point_key1)->AddCorrPoint(camera2, match.trainIdx) ||
                         !points_.at(point_key2)->AddCorrPoint(camera1, match.queryIdx)) {
                         std::cerr << "Unable to add the corr" << std::endl;
@@ -240,32 +240,37 @@ namespace sfm {
      */
     void CorrespondenceGraph::AddWorldPoints(int camera1, int camera2, int index,
                                              const std::shared_ptr<Point3d> &point_ptr) {
-        int camera_key = ComputeEdgeKey(camera1, camera2);
-        int point_key1 = ComputePointKey(camera1, edges_.at(camera_key)->matches_[index].queryIdx);
-        int point_key2 = ComputePointKey(camera2, edges_.at(camera_key)->matches_[index].trainIdx);
-        int size1 = points_.at(point_key1)->GetCorrNumber();
-        int size2 = points_.at(point_key2)->GetCorrNumber();
-//        if (points_.at(point_key1)->GetCorrNumber() != points_.at(point_key2)->GetCorrNumber()) {
-//            std::cerr << "The size of two corr is not equal" << std::endl;
-//            std::cerr << "There are outliers in the match" << std::endl;
-//            std::cerr << points_.at(point_key1)->GetCorrNumber() << ' ' << points_.at(point_key2)->GetCorrNumber()
-//                      << std::endl << std::endl;
-//        }
-        if (size1 == 0 || size2 == 0) {
-            std::cerr << "The size is zero" << std::endl;
-        }
-        points_.at(point_key1)->AddWorldPoints(point_ptr);
-        std::vector<int> corrs1;
-        std::vector<int> corrs2;
-        corrs1.resize(size1);
-        corrs2.resize(size2);
-        points_.at(point_key1)->GetCorrs(corrs1);
-        points_.at(point_key2)->GetCorrs(corrs2);
-        for (int i = 0; i < size1; ++i) {
-            points_.at(corrs1[i])->AddWorldPoints(point_ptr);
-        }
-        for (int i = 0; i < size2; ++i) {
-            points_.at(corrs2[i])->AddWorldPoints(point_ptr);
+        int edge_key = ComputeEdgeKey(camera1, camera2);
+        if (edges_.at(edge_key)->is_E_inliers_[index]) {
+            int point_key1 = ComputePointKey(camera1, edges_.at(edge_key)->matches_[index].queryIdx);
+            int point_key2 = ComputePointKey(camera2, edges_.at(edge_key)->matches_[index].trainIdx);
+            int size1, size2;
+            if (points_.find(point_key1) != points_.end()) {
+                size1 = points_.at(point_key1)->GetCorrNumber();
+            } else {
+                std::cerr << "Unable to find the target point " << std::endl;
+            }
+            if (points_.find(point_key2) != points_.end()) {
+                size2 = points_.at(point_key2)->GetCorrNumber();
+            } else {
+                std::cerr << "Unable to find the target point " << std::endl;
+            }
+            if (size1 == 0 || size2 == 0) {
+                std::cerr << "The size is zero" << std::endl;
+            }
+            points_.at(point_key1)->AddWorldPoints(point_ptr);
+            std::vector<int> corrs1;
+            std::vector<int> corrs2;
+            corrs1.resize(size1);
+            corrs2.resize(size2);
+            points_.at(point_key1)->GetCorrs(corrs1);
+            points_.at(point_key2)->GetCorrs(corrs2);
+            for (int i = 0; i < size1; ++i) {
+                points_.at(corrs1[i])->AddWorldPoints(point_ptr);
+            }
+            for (int i = 0; i < size2; ++i) {
+                points_.at(corrs2[i])->AddWorldPoints(point_ptr);
+            }
         }
     }
 
@@ -302,6 +307,7 @@ namespace sfm {
                                                std::vector<cv::Point3f> &world_points,
                                                std::vector<cv::Point2f> &image_points) {
         int related_number = 0;
+        std::cout << "The size of the points is " << points_.size() << std::endl;
         for (const auto &point: points_) {
             if (point.first / 100000 == camera_key) {
                 if (point.second->HasRegistered()) {

@@ -63,6 +63,11 @@ namespace sfm {
         }
     }
 
+    /**
+     * index 为当前加入的edge的编号，type为选择的进行单视图三角化的方法
+     * @param index
+     * @param type
+     */
     void IncrementalRebuild::SingalViewTriangulation(int index, TrianguleType type) {
         auto camera1 = scene_graph_->GetCameraModel(index, CameraChoice::kCamera1);
         auto camera2 = scene_graph_->GetCameraModel(index, CameraChoice::kCamera2);
@@ -294,38 +299,43 @@ namespace sfm {
      */
     void IncrementalRebuild::GetUnregisteredPoints(int old_camera_key, int new_camera_key,
                                                    std::unordered_map<int, std::vector<int>> &points) {
+        int i = 0;
         int edge_key = CorrespondenceGraph::ComputeEdgeKey(old_camera_key, new_camera_key);
         const auto edge = scene_graph_->GetEdge(edge_key);
         std::vector<Eigen::Vector2d> temp_old_points;
         std::vector<Eigen::Vector2d> temp_new_points;
         if (edge->key_ / 100 == old_camera_key) {
             for (const auto &match: edge->matches_) {
-                int new_point_key = CorrespondenceGraph::ComputePointKey(new_camera_key, match.trainIdx);
-                int old_point_key = CorrespondenceGraph::ComputePointKey(old_camera_key, match.queryIdx);
-                if (!scene_graph_->PointHasRegistered(new_point_key) &&
-                    !scene_graph_->PointHasRegistered(old_point_key)) {
-                    if (points.find(new_point_key) == points.end()) {
-                        std::vector<int> temp;
-                        points.insert(std::pair<int, std::vector<int>>(new_point_key, temp));
+                if (edge->is_E_inliers_[i++]) {
+                    int new_point_key = CorrespondenceGraph::ComputePointKey(new_camera_key, match.trainIdx);
+                    int old_point_key = CorrespondenceGraph::ComputePointKey(old_camera_key, match.queryIdx);
+                    if (!scene_graph_->PointHasRegistered(new_point_key) &&
+                        !scene_graph_->PointHasRegistered(old_point_key)) {
+                        if (points.find(new_point_key) == points.end()) {
+                            std::vector<int> temp;
+                            points.insert(std::pair<int, std::vector<int>>(new_point_key, temp));
+                        }
+                        scene_graph_->SetPointRegistered(new_point_key);
+                        scene_graph_->SetPointRegistered(old_point_key);
+                        points.at(new_point_key).push_back(old_point_key);
                     }
-                    scene_graph_->SetPointRegistered(new_point_key);
-                    scene_graph_->SetPointRegistered(old_point_key);
-                    points.at(new_point_key).push_back(old_point_key);
                 }
             }
         } else {
             for (const auto &match: edge->matches_) {
-                int new_point_key = CorrespondenceGraph::ComputePointKey(new_camera_key, match.queryIdx);
-                int old_point_key = CorrespondenceGraph::ComputePointKey(old_camera_key, match.trainIdx);
-                if (!scene_graph_->PointHasRegistered(new_point_key) &&
-                    !scene_graph_->PointHasRegistered(old_point_key)) {
-                    if (points.find(new_point_key) == points.end()) {
-                        std::vector<int> temp;
-                        points.insert(std::pair<int, std::vector<int>>(new_point_key, temp));
+                if (edge->is_E_inliers_[i++]) {
+                    int new_point_key = CorrespondenceGraph::ComputePointKey(new_camera_key, match.queryIdx);
+                    int old_point_key = CorrespondenceGraph::ComputePointKey(old_camera_key, match.trainIdx);
+                    if (!scene_graph_->PointHasRegistered(new_point_key) &&
+                        !scene_graph_->PointHasRegistered(old_point_key)) {
+                        if (points.find(new_point_key) == points.end()) {
+                            std::vector<int> temp;
+                            points.insert(std::pair<int, std::vector<int>>(new_point_key, temp));
+                        }
+                        scene_graph_->SetPointRegistered(new_point_key);
+                        scene_graph_->SetPointRegistered(old_point_key);
+                        points.at(new_point_key).push_back(old_point_key);
                     }
-                    scene_graph_->SetPointRegistered(new_point_key);
-                    scene_graph_->SetPointRegistered(old_point_key);
-                    points.at(new_point_key).push_back(old_point_key);
                 }
             }
         }
