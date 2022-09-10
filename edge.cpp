@@ -228,8 +228,11 @@ namespace sfm {
         camera2_->SetCameraPose(R, _t);
     }
 
+    /**
+     * 判断一个匹配是否是外点
+     */
     void Edge::CleanOutliers() {
-        is_inliers_.resize(this->matches_.size());
+        is_E_inliers_.resize(this->matches_.size());
         for (int i = 0; i < matches_.size(); ++i) {
             cv::Mat temp_point1 = (cv::Mat_<float>(3, 1) <<
                     camera1_->key_points_[matches_[i].trainIdx].pt.x,
@@ -244,11 +247,11 @@ namespace sfm {
             temp_point2.convertTo(temp_point2, e_m_.type());
 
             cv::Mat check_result = temp_point1.t() * e_m_ * temp_point2;
-            if (check_result.at<float>(0, 0) > ESSENTIAL_INLIER_THRESHOLD) {
-                is_inliers_[i] = false;
-            } else {
+            if (check_result.at<float>(0, 0) <= ESSENTIAL_MATRIX_INLIERS_THRESHOLD) {
+                is_E_inliers_[i] = true;
                 e_m_inliers_++;
             }
         }
+        std::cout << "The size of the inliers is " << e_m_inliers_ << std::endl;
     }
 } // sfm

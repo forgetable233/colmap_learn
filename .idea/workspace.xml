@@ -25,8 +25,9 @@
       <change beforePath="$PROJECT_DIR$/correspondence_graph.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/correspondence_graph.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/edge.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/edge.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/edge.h" beforeDir="false" afterPath="$PROJECT_DIR$/edge.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/point2d.h" beforeDir="false" afterPath="$PROJECT_DIR$/point2d.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/point_viewer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/point_viewer.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/img_loader.cc" beforeDir="false" afterPath="$PROJECT_DIR$/img_loader.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/incremental_rebuild.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/incremental_rebuild.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/thresholds.h" beforeDir="false" afterPath="$PROJECT_DIR$/thresholds.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -78,6 +79,11 @@
     </key>
   </component>
   <component name="RunManager">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="test" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="test" TARGET_NAME="test" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="test" RUN_TARGET_NAME="test">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -158,6 +164,7 @@
       <workItem from="1662714230604" duration="2187000" />
       <workItem from="1662719364854" duration="1024000" />
       <workItem from="1662722098674" duration="8095000" />
+      <workItem from="1662801410959" duration="4279000" />
     </task>
     <servers />
   </component>
@@ -204,6 +211,17 @@
         <entry key="c89949b6-7fef-4f57-b108-82276e114e8f" value="TOOL_WINDOW" />
       </map>
     </option>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/correspondence_graph.cpp</url>
+          <line>310</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
