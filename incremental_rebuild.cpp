@@ -34,6 +34,7 @@ namespace sfm {
         std::cout << "Have finished the rebuild" << std::endl;
 //        BA();
         ViewAllPoints();
+
     }
 
     int IncrementalRebuild::GetBestBeginEdge(int &second_max) {
@@ -150,7 +151,7 @@ namespace sfm {
             check2 = P2.row(2) * temp_point;
             /** 测试不加上删除负数情况 **/
             /** 下面加入了测试 **/
-            if (check1.at<double>(0, 0) >= 0 && check2.at<double>(0, 0) >= 0) {
+            if (check1.at<double>(0, 0) <= 0 && check2.at<double>(0, 0) <= 0) {
                 sum++;
                 temp.x() = temp_point.at<double>(0, 0) / temp_point.at<double>(3, 0);
                 temp.y() = temp_point.at<double>(1, 0) / temp_point.at<double>(3, 0);
@@ -206,6 +207,7 @@ namespace sfm {
         } else {
             std::shared_ptr<PointViewer> viewer = std::make_shared<PointViewer>(world_points);
             viewer->ViewPoints();
+//            viewer->StorePCD();
         }
     }
 
@@ -269,17 +271,16 @@ namespace sfm {
             /** 利用SVD加上多视角进行一个多视角三角化的计算，算是传统三角化方法，只是增加了加入点的量 **/
             Eigen::Matrix<double, Eigen::Dynamic, 3> function;
             Eigen::Matrix<double, 3, 4> temp_P;
-            /** 保存所有图片的P **/
+            /** 保存所有图片的P用来进行正数检测 **/
+            scene_graph_->GetP(camera_key, temp_P);
             P.insert(std::pair<int, Eigen::Matrix<double, 3, 4>>(camera_key, temp_P));
             for (const auto &joined_image: joined_images_) {
                 scene_graph_->GetP(joined_image, temp_P);
                 P.insert(std::pair<int, Eigen::Matrix<double, 3, 4>>(joined_image, temp_P));
             }
             for (const auto &image_point: new_image_points) {
-                Eigen::Vector3d world_point;
+                Eigen::Vector3d world_point(0, 0, 0);
                 if (SVDComputeWorldPoint(image_point.first, world_point, new_image_points, P)) {
-                    /*if (fabs(world_point.x()) >= 0.001 && fabs(world_point.y()) >= 0.001 && fabs(world_point.z()) >= 0.001) {
-                    }*/
                     world_points.push_back(world_point);
                 }
             }
@@ -306,7 +307,7 @@ namespace sfm {
         std::vector<Eigen::Vector2d> temp_new_points;
         if (edge->key_ / 100 == old_camera_key) {
             for (const auto &match: edge->matches_) {
-                if (edge->is_E_inliers_[i++]) {
+                if (edge->is_F_inliers_[i++]) {
                     int new_point_key = CorrespondenceGraph::ComputePointKey(new_camera_key, match.trainIdx);
                     int old_point_key = CorrespondenceGraph::ComputePointKey(old_camera_key, match.queryIdx);
                     if (!scene_graph_->PointHasRegistered(new_point_key) &&
@@ -323,7 +324,7 @@ namespace sfm {
             }
         } else {
             for (const auto &match: edge->matches_) {
-                if (edge->is_E_inliers_[i++]) {
+                if (edge->is_F_inliers_[i++]) {
                     int new_point_key = CorrespondenceGraph::ComputePointKey(new_camera_key, match.queryIdx);
                     int old_point_key = CorrespondenceGraph::ComputePointKey(old_camera_key, match.trainIdx);
                     if (!scene_graph_->PointHasRegistered(new_point_key) &&
@@ -369,13 +370,13 @@ namespace sfm {
         Eigen::JacobiSVD<Eigen::Matrix<double, Eigen::Dynamic, 4>> svd(func, Eigen::ComputeFullU | Eigen::ComputeFullV);
         Eigen::Vector4d homo_world_point = svd.matrixV().col(2);
         /** 测试是否满足深度为正数 **/
-        for (const auto &corr_point: image_points.at(point_key)) {
+        /*for (const auto &corr_point: image_points.at(point_key)) {
             camera_key = CorrespondenceGraph::GetCameraKeyByPoint(corr_point);
             if (P.at(camera_key).row(2) * homo_world_point <= 0) {
                 return false;
             }
-        }
-        homo_world_point /= homo_world_point(3);
+        }*/
+//        homo_world_point /= homo_world_point(3);
         world_point.x() = homo_world_point(0);
         world_point.y() = homo_world_point(1);
         world_point.z() = homo_world_point(2);
