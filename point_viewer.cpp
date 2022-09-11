@@ -29,7 +29,7 @@ namespace sfm {
         viewer_->addPointCloud<pcl::PointXYZRGB>(cloud_, "world points");
         viewer_->setBackgroundColor(0, 0, 0);
         viewer_->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 10, "world points");
-        viewer_->addCoordinateSystem(1000);
+        viewer_->addCoordinateSystem(10);
         viewer_->setCameraPosition(1, 1, 1,
                                    0, 0, 4,
                                    0, 1, 5);
@@ -53,7 +53,7 @@ namespace sfm {
     void PointViewer::StorePCD() {
         if (!cloud_->empty()) {
             pcl::PCDWriter writer;
-            writer.write("../pointClouds/InitialData.pcb", *cloud_);
+            writer.write("../pointClouds/TestlData.pcb", *cloud_);
         } else {
             std::cerr << "The size of the point clouds is zero" << std::endl;
         }

@@ -91,7 +91,7 @@ namespace sfm {
             // TODO 这里有对外点的过滤问题
             int i = 0;
             for (const auto &match: edge.second->matches_) {
-                if (edge.second->is_E_inliers_[i++]) {
+                if (edge.second->is_F_inliers_[i++]) {
                     int point_key1 = ComputePointKey(camera1, match.queryIdx);
                     int point_key2 = ComputePointKey(camera2, match.trainIdx);
                     if (points_.find(point_key1) == points_.end()) {
@@ -241,7 +241,7 @@ namespace sfm {
     void CorrespondenceGraph::AddWorldPoints(int camera1, int camera2, int index,
                                              const std::shared_ptr<Point3d> &point_ptr) {
         int edge_key = ComputeEdgeKey(camera1, camera2);
-        if (edges_.at(edge_key)->is_E_inliers_[index]) {
+        if (edges_.at(edge_key)->is_F_inliers_[index]) {
             int point_key1 = ComputePointKey(camera1, edges_.at(edge_key)->matches_[index].queryIdx);
             int point_key2 = ComputePointKey(camera2, edges_.at(edge_key)->matches_[index].trainIdx);
             int size1, size2;
@@ -307,7 +307,6 @@ namespace sfm {
                                                std::vector<cv::Point3f> &world_points,
                                                std::vector<cv::Point2f> &image_points) {
         int related_number = 0;
-        std::cout << "The size of the points is " << points_.size() << std::endl;
         for (const auto &point: points_) {
             if (point.first / 100000 == camera_key) {
                 if (point.second->HasRegistered()) {

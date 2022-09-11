@@ -35,7 +35,7 @@ namespace sfm {
 
         std::vector<cv::DMatch> matches_;
 
-        std::vector<bool> is_E_inliers_;
+        std::vector<bool> is_F_inliers_;
 
         std::vector<cv::Point2i> key_points_1_;
         std::vector<cv::Point2i> key_points_2_;
