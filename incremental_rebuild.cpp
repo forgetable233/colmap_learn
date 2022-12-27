@@ -151,7 +151,7 @@ namespace sfm {
             check2 = P2.row(2) * temp_point;
             /** 测试不加上删除负数情况 **/
             /** 下面加入了测试 **/
-            if (check1.at<double>(0, 0) <= 0 && check2.at<double>(0, 0) <= 0) {
+            if (check1.at<double>(0, 0) <= 0 && check2.at<double>(0, 0) <= 0 || temp_point.at<double>(2, 0) / temp_point.at<double>(3, 0) > 0) {
                 sum++;
                 temp.x() = temp_point.at<double>(0, 0) / temp_point.at<double>(3, 0);
                 temp.y() = temp_point.at<double>(1, 0) / temp_point.at<double>(3, 0);
@@ -188,10 +188,26 @@ namespace sfm {
             }
             std::shared_ptr<Point3d> world_ptr = std::make_shared<Point3d>(world_points[i + 1]);
             i++;
-            scene_graph_->AddWorldPoints(point.first, point.second, world_ptr);
-            world_point_key = ComputeWorldPointKey();
-            world_points_.insert(std::pair<int, std::shared_ptr<Point3d>>(world_point_key, nullptr));
-            world_points_.at(world_point_key) = world_ptr;
+            cv::Mat check;
+            cv::Mat temp_word_point;
+            Eigen::Vector4d homo_word_point = world_points[i].homogeneous();
+            cv::eigen2cv(homo_word_point, temp_word_point);
+            bool flag = false;
+            for (auto & camera : cameras) {
+                cv::Mat P = camera->K_ * camera->T_;
+                check = P.row(2) * temp_word_point;
+                if (check.at<double>(0, 0) < 0 || world_points[i].z() < 0) {
+                    flag = true;
+                    std::cerr << "The depth is less than zero" << std::endl;
+                    break;
+                }
+            }
+            if (!flag) {
+                scene_graph_->AddWorldPoints(point.first, point.second, world_ptr);
+                world_point_key = ComputeWorldPointKey();
+                world_points_.insert(std::pair<int, std::shared_ptr<Point3d>>(world_point_key, nullptr));
+                world_points_.at(world_point_key) = world_ptr;
+            }
         }
     }
 
