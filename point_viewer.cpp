@@ -21,9 +21,9 @@ namespace sfm {
             temp.y = static_cast<float>(point.y());
             temp.z = static_cast<float>(point.z());
             temp.rgb = 0xff0000;
-            if (temp.z > 0 ) {
+//            if (temp.z > 0 ) {
                 cloud_->emplace_back(temp);
-            }
+//            }
         }
     }
 
