@@ -235,18 +235,18 @@ namespace sfm {
         is_F_inliers_.resize(this->matches_.size());
         for (int i = 0; i < matches_.size(); ++i) {
             cv::Mat temp_point1 = (cv::Mat_<float>(3, 1) <<
-                    camera1_->key_points_[matches_[i].trainIdx].pt.x,
-                    camera1_->key_points_[matches_[i].trainIdx].pt.y,
+                    camera1_->key_points_[matches_[i].queryIdx].pt.x,
+                    camera1_->key_points_[matches_[i].queryIdx].pt.y,
                     1.0f);
             cv::Mat temp_point2 = (cv::Mat_<float>(3, 1) <<
-                    camera2_->key_points_[matches_[i].queryIdx].pt.x,
-                    camera2_->key_points_[matches_[i].queryIdx].pt.x,
+                    camera2_->key_points_[matches_[i].trainIdx].pt.x,
+                    camera2_->key_points_[matches_[i].trainIdx].pt.y,
                     1.0f);
 
-            temp_point1.convertTo(temp_point1, e_m_.type());
-            temp_point2.convertTo(temp_point2, e_m_.type());
+            temp_point1.convertTo(temp_point1, f_m_.type());
+            temp_point2.convertTo(temp_point2, f_m_.type());
 
-            cv::Mat check_result = temp_point1.t() * e_m_ * temp_point2;
+            cv::Mat check_result = temp_point1.t() * f_m_ * temp_point2;
             if (check_result.at<float>(0, 0) <= FUNDAMENTAL_MATRIX_INLIERS_THRESHOLD) {
                 is_F_inliers_[i] = true;
                 f_m_inliers_++;
