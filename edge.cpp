@@ -34,7 +34,8 @@ namespace sfm {
         this->t_ = std::move(input_edge.t_);
         this->key_points_1_ = std::move(input_edge.key_points_1_);
         this->key_points_2_ = std::move(input_edge.key_points_2_);
-
+        this->colors1_ = std::move(input_edge.colors1_);
+        this->colors2_ = std::move(input_edge.colors2_);
         if (!InitialParameters(true)) {
             std::cerr << "Unable the initial the parameters!" << std::endl;
         }
@@ -122,6 +123,8 @@ namespace sfm {
         for (auto match: this->matches_) {
             this->key_points_1_.emplace_back(this->camera1_->key_points_[match.queryIdx].pt);
             this->key_points_2_.emplace_back(this->camera2_->key_points_[match.trainIdx].pt);
+            this->colors1_.emplace_back(this->camera1_->colors_[match.queryIdx]);
+            this->colors2_.emplace_back(this->camera2_->colors_[match.trainIdx]);
         }
     }
 

@@ -40,6 +40,9 @@ namespace sfm {
         std::vector<cv::Point2i> key_points_1_;
         std::vector<cv::Point2i> key_points_2_;
 
+        std::vector<Eigen::Vector3d> colors1_;
+        std::vector<Eigen::Vector3d> colors2_;
+
         cv::Mat e_m_;
         cv::Mat f_m_;
         cv::Mat h_m_;
