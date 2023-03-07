@@ -30,6 +30,8 @@ namespace sfm {
         // 此处的key为对应点在每张图片的位置，包含一个key和一个像素坐标
         Eigen::Vector2d pixel_point_;
 
+        Eigen::Vector3d color_;
+
         std::unordered_map<int, int> correspondence_;
 
         int world_point_id_ = -1;

@@ -54,9 +54,16 @@ namespace sfm {
 
         sift->detect(_image, this->key_points_);
         sift->compute(_image, this->key_points_, this->descriptors_);
-        if (this->key_points_.size() == 0) {
+        if (this->key_points_.empty()) {
             std::cout << "this image can not find enough key points_" << std::endl;
             std::cout << this->key_ << std::endl;
+        }
+        for (const auto &point: this->key_points_) {
+            int x = static_cast<int>(point.pt.x);
+            int y = static_cast<int>(point.pt.y);
+            colors_.emplace_back(_image.at<cv::Vec3b>(x, y)[2],
+                                 _image.at<cv::Vec3b>(x, y)[1],
+                                 _image.at<cv::Vec3b>(x, y)[0]);
         }
         cv::Mat temp =
                 (cv::Mat_<float>(3, 3) << _image.cols / 2, 0.0f, _image.cols / 2,
