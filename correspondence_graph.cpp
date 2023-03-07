@@ -102,7 +102,7 @@ namespace sfm {
                     }
                     if (points_.find(point_key2) == points_.end()) {
                         Eigen::Vector2d temp_point{edge.second->key_points_2_[match.trainIdx].x,
-                                                   edge.second->key_points_1_[match.trainIdx].y};
+                                                   edge.second->key_points_2_[match.trainIdx].y};
                         std::shared_ptr<Point2d> temp = std::make_shared<Point2d>(match.trainIdx, temp_point);
                         points_.insert(std::pair<int, std::shared_ptr<Point2d>>(point_key2, temp));
                     }
