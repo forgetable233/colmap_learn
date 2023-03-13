@@ -59,6 +59,8 @@ namespace sfm {
             return (new ceres::AutoDiffCostFunction<ReprojectionError, 2, 21, 3>
                     (new ReprojectionError(observed_x, observed_y)));
         }
+
+        double computeError();
     };
 
 } // sfm

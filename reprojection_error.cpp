@@ -9,4 +9,7 @@ namespace sfm {
 
     ReprojectionError::~ReprojectionError() = default;
 
+    double ReprojectionError::computeError() {
+        return 0;
+    }
 } // sfm
