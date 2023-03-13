@@ -19,6 +19,7 @@
 #include <cppconn/resultset.h>
 #include <cppconn/statement.h>
 #include <prepared_statement.h>
+#include <unistd.h>
 
 
 #define USER "dcr"
@@ -28,6 +29,7 @@
 #define DBNAME "SFM"
 #define PORT 3306
 
+/** 还得实现连接池 **/
 namespace sfm {
     class SQLHandle {
     private:
@@ -47,6 +49,8 @@ namespace sfm {
                    std::vector<double> &y, std::vector<int> &r, std::vector<int> &g, std::vector<int> &b);
 
         static int getPoint2dKey(int image_index, int match_index);
+
+        static bool addPointMatch(std::vector<int> &match1_, std::vector<int> &match2_, int image1, int image2);
 
         static bool addEdge(int image1, int image2);
 

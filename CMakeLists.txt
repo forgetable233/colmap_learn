@@ -45,5 +45,9 @@ target_link_libraries(test
         PRIVATE Eigen3::Eigen
         ${OpenCV_LIBS}
         ${PCL_LIBRARIES}
-        ${CERES_LIBRARIES})
+        ${CERES_LIBRARIES}
+        mysqlclient
+        mysqlcppconn)
+
+#target_link_libraries(test mysqlclient mysqlcppconn)
 
