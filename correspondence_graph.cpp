@@ -389,4 +389,8 @@ namespace sfm {
             }
         }
     }
+
+    CorrespondenceGraph::CorrespondenceGraph(bool use_sql) {
+
+    }
 }

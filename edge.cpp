@@ -155,8 +155,8 @@ namespace sfm {
             key1.emplace_back(camera1_->key_);
             key2.emplace_back(camera2_->key_);
         }
-        sfm::SQLHandle::addPoint2d(key1, queryIdx, x1, y1, r1, g1, b1);
-        sfm::SQLHandle::addPoint2d(key2, trainIdx, x2, y2, r2, g2, b2);
+//        sfm::SQLHandle::addPoint2d(key1, queryIdx, x1, y1, r1, g1, b1);
+//        sfm::SQLHandle::addPoint2d(key2, trainIdx, x2, y2, r2, g2, b2);
 //        sfm::SQLHandle::addPointMatch(queryIdx, trainIdx, camera1_->key_, camera2_->key_);
     }
 

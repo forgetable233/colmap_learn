@@ -29,7 +29,8 @@
 #define DBNAME "SFM"
 #define PORT 3306
 
-/** 还得实现连接池 **/
+/** 还得实现连接池
+ * 目前的查询速度很慢**/
 namespace sfm {
     class SQLHandle {
     private:
