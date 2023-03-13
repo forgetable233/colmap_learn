@@ -16,6 +16,7 @@
 #include "edge.h"
 #include "point2d.h"
 #include "thresholds.h"
+#include "mysql.h"
 
 namespace sfm {
     enum CameraChoice {

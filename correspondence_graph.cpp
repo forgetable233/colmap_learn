@@ -19,6 +19,7 @@ namespace sfm {
                     continue;
                 }
                 int edge_key = ComputeEdgeKey(cameras[i]->key_, cameras[j]->key_);
+                sfm::SQLHandle::addEdge(cameras[i]->key_, cameras[j]->key_);
                 scene_graph_.insert(std::pair<int, int>(edge_key / 100, edge_key % 100));
                 edges_.insert(std::pair<int, std::shared_ptr<Edge>>
                                       (edge_key, std::make_shared<Edge>(cameras[i], cameras[j])));

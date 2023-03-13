@@ -81,7 +81,7 @@ sfm::SQLHandle::addPoint2d(std::vector<int> &image_index,
         connection->close();
         delete preparedStatement;
         delete match_prepareStatement;
-        delete count;
+//        delete count;
         return true;
     } catch (sql::SQLException &e) {
         std::cerr << "链接异常" << ' ' << e.what() << std::endl;
@@ -147,6 +147,9 @@ bool sfm::SQLHandle::addEdge(int image1, int image2) {
         result = count->executeQuery(count_sql);
         while (result->next()) {
             index = result->getInt(1);
+        }
+        if (sfm::SQLHandle::getEdgeKey(image1, image2) != -1) {
+            return false;
         }
         preparedStatement = connection->prepareStatement(sql);
         preparedStatement->setInt(1, index);
@@ -265,4 +268,38 @@ bool sfm::SQLHandle::addImage(int image_index) {
     mysql_stmt_close(stmt);
     mysql_close(sql);
     return true;
+}
+
+int sfm::SQLHandle::getEdgeKey(int image1, int image2) {
+    int edge_key = -1;
+    std::string sql = "select edge_key from edge where image_key1 = ? and image_key2 = ?;";
+    try {
+        sql::Driver *driver;
+        sql::Connection *connection;
+        sql::PreparedStatement *preparedStatement;
+        sql::ResultSet *result;
+        driver = get_driver_instance();
+        connection = driver->connect(HOST, USER, PWD);
+        connection->setSchema("SFM");
+        preparedStatement = connection->prepareStatement(sql);
+        preparedStatement->setInt(1, image1);
+        preparedStatement->setInt(2, image2);
+        result = preparedStatement->executeQuery();
+        while (result->next()) {
+            edge_key = result->getInt(1);
+            break;
+        }
+        preparedStatement->close();
+        connection->close();
+        delete preparedStatement;
+        delete connection;
+        return edge_key;
+    } catch (sql::SQLException &e) {
+        std::cerr << "*******" << ' ' << e.what() << std::endl;
+        return -1;
+    } catch (std::runtime_error &e) {
+        std::cerr << "runtime error: " << e.what() << std::endl;
+        return -1;
+    }
+    return -1;
 }

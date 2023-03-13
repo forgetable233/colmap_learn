@@ -50,6 +50,8 @@ namespace sfm {
 
         static int getPoint2dKey(int image_index, int match_index);
 
+        static int getEdgeKey(int image1, int image2);
+
         static bool addPointMatch(std::vector<int> &match1_, std::vector<int> &match2_, int image1, int image2);
 
         static bool addEdge(int image1, int image2);

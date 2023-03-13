@@ -54,6 +54,7 @@ namespace sfm {
             cv::cvtColor(down_sample_2, grey_image, cv::COLOR_BGR2GRAY);
 
             _cameras.emplace_back(std::make_shared<CameraModel>(grey_image, number));
+//            sfm::SQLHandle::addImage(number);
             number++;
             temp_path.erase(temp_path.length() - strlen(ptr->d_name), strlen(ptr->d_name));
         }

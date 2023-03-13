@@ -120,12 +120,44 @@ namespace sfm {
     }
 
     void Edge::GetPoints() {
+        std::vector<int> queryIdx;
+        std::vector<int> trainIdx;
+        std::vector<double> x1;
+        std::vector<double> x2;
+        std::vector<double> y1;
+        std::vector<double> y2;
+        std::vector<int> r1;
+        std::vector<int> r2;
+        std::vector<int> g1;
+        std::vector<int> g2;
+        std::vector<int> b1;
+        std::vector<int> b2;
+        std::vector<int> key1;
+        std::vector<int> key2;
         for (auto match: this->matches_) {
             this->key_points_1_.emplace_back(this->camera1_->key_points_[match.queryIdx].pt);
             this->key_points_2_.emplace_back(this->camera2_->key_points_[match.trainIdx].pt);
             this->colors1_.emplace_back(this->camera1_->colors_[match.queryIdx]);
             this->colors2_.emplace_back(this->camera2_->colors_[match.trainIdx]);
+            queryIdx.emplace_back(match.queryIdx);
+            trainIdx.emplace_back(match.trainIdx);
+            x1.emplace_back(this->key_points_1_.back().x);
+            x2.emplace_back(this->key_points_2_.back().x);
+            y1.emplace_back(this->key_points_1_.back().y);
+            y2.emplace_back(this->key_points_2_.back().y);
+
+            r1.emplace_back(this->colors1_.back().x());
+            r2.emplace_back(this->colors2_.back().x());
+            g1.emplace_back(this->colors1_.back().y());
+            g2.emplace_back(this->colors2_.back().y());
+            b1.emplace_back(this->colors1_.back().z());
+            b2.emplace_back(this->colors2_.back().z());
+            key1.emplace_back(camera1_->key_);
+            key2.emplace_back(camera2_->key_);
         }
+        sfm::SQLHandle::addPoint2d(key1, queryIdx, x1, y1, r1, g1, b1);
+        sfm::SQLHandle::addPoint2d(key2, trainIdx, x2, y2, r2, g2, b2);
+//        sfm::SQLHandle::addPointMatch(queryIdx, trainIdx, camera1_->key_, camera2_->key_);
     }
 
     /**

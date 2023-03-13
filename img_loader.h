@@ -20,6 +20,7 @@
 
 #include "thresholds.h"
 #include "camera_model.h"
+#include "mysql.h"
 
 
 namespace sfm {
