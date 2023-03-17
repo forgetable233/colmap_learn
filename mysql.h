@@ -51,16 +51,20 @@ namespace sfm {
 
         static bool
         addPoint2d(std::vector<int> &image_index, std::vector<int> &match_index, std::vector<double> &x,
-                   std::vector<double> &y,
-                   std::vector<int> &r, std::vector<int> &g, std::vector<int> &b, int edge_key);
+                   std::vector<double> &y, std::vector<int> &r, std::vector<int> &g, std::vector<int> &b);
 
         static int getPoint2dKey(int image_index, int match_index);
 
         static int getEdgeKey(int image1, int image2);
 
-        static bool addPointMatch(std::vector<int> &match1_, std::vector<int> &match2_, int image1, int image2);
+        static bool
+        addPointMatch(std::vector<int> &match_index1,
+                      std::vector<int> &match_index2,
+                      int image1,
+                      int image2,
+                      int edge_key);
 
-        static bool addEdge(int image1, int image2);
+        static bool addEdge(int image1, int image2, int edge_key);
 
         static bool addImage(int image_index);
 
@@ -68,7 +72,7 @@ namespace sfm {
 
         static bool getEdges(std::vector<Eigen::Vector2i> &edges);
 
-        static bool getMatchPoint(std::vector<sfm::Point> &temp_point);
+//        static bool getMatchPoint(std::vector<Point> &temp_point);
     };
 }
 

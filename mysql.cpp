@@ -19,28 +19,19 @@ sfm::SQLHandle::addPoint2d(std::vector<int> &image_index,
                            std::vector<double> &y,
                            std::vector<int> &r,
                            std::vector<int> &g,
-                           std::vector<int> &b,
-                           int edge_key) {
+                           std::vector<int> &b) {
 
-    std::string sql =
+    std::string add_point2d =
             "insert into point2d (image_index, match_index, x, y, r, g, b, point_key) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
-    std::string count_sql =
-            "select count(*) from point2d;";
     std::string image_match_count =
             "select count(*) from image_match;";
     std::string add_image_match =
             "insert into image_match (image_match_key, image_index, point_key) VALUES (?, ?, ?);";
-    std::string point_match_count =
-            "insert into point_match (point_match_key, point_key1, point_key2, edge_key) values (?, ?, ?, ?);";
-    std::string get_edge_key = "select edge_key from edge where image_key1 = ? and image_key2 = ?;";
-    int image1 = edge_key / 100;
-    int image2 = edge_key % 100;
     try {
         sql::Driver *driver;
         sql::Connection *connection;
 
         sql::ResultSet *result;
-        int index;
         int image_match_index;
         int point_match_index;
         int size = image_index.size();
@@ -50,37 +41,20 @@ sfm::SQLHandle::addPoint2d(std::vector<int> &image_index,
         connection->setSchema("SFM");
 
         sql::Statement *count = connection->createStatement();
-        result = count->executeQuery(count_sql);
-        while (result->next()) {
-            index = result->getInt(1);
-        }
         result = count->executeQuery(image_match_count);
         while (result->next()) {
             image_match_index = result->getInt(1);
         }
-        result = count->executeQuery(point_match_count);
-        while (result->next()) {
-            point_match_index = result->getInt(1);
-        }
         count->close();
         delete count;
-        sql::PreparedStatement *preparedStatement = connection->prepareStatement(sql);
+        sql::PreparedStatement *preparedStatement = connection->prepareStatement(add_point2d);
         sql::PreparedStatement *match_prepareStatement = connection->prepareStatement(add_image_match);
-        sql::PreparedStatement *tar_edge_key = connection->prepareStatement(get_edge_key);
-        tar_edge_key->setInt(1, image1);
-        tar_edge_key->setInt(2, image2);
-        result = tar_edge_key->executeQuery();
-        while (result->next()) {
-            final_edge_key = result->getInt(1);
-        }
-
-        tar_edge_key->close();
-        delete tar_edge_key;
 
         for (int i = 0; i < size; ++i) {
             if (sfm::SQLHandle::getPoint2dKey(image_index[i], match_index[i]) != -1) {
                 continue;
             }
+            int index = sfm::Point2d::ComputePointKey(image_index[i], match_index[i]);
             preparedStatement->setInt(1, image_index[i]);
             preparedStatement->setInt(2, match_index[i]);
             preparedStatement->setDouble(3, x[i]);
@@ -90,12 +64,13 @@ sfm::SQLHandle::addPoint2d(std::vector<int> &image_index,
             preparedStatement->setInt(7, b[i]);
             preparedStatement->setInt(8, index);
             preparedStatement->execute();
+//            std::cout << "Have added a point the index is " << index << std::endl;
 
             match_prepareStatement->setInt(1, image_match_index);
             match_prepareStatement->setInt(2, image_index[i]);
             match_prepareStatement->setInt(3, index);
             match_prepareStatement->execute();
-            index++;
+
             image_match_index++;
 
             preparedStatement->clearParameters();
@@ -149,32 +124,23 @@ int sfm::SQLHandle::getPoint2dKey(int image_index, int match_index) {
     return -1;
 }
 
-bool sfm::SQLHandle::addEdge(int image1, int image2) {
+bool sfm::SQLHandle::addEdge(int image1, int image2, int edge_key) {
     if (image2 == image1) {
         return false;
     }
-    int index = -1;
     std::string sql = "insert into edge (edge_key, image_key1, image_key2) values (?, ?, ?);";
-    std::string count_sql = "select count(*) from edge;";
     try {
         sql::Driver *driver;
         sql::Connection *connection;
         sql::PreparedStatement *preparedStatement;
-        sql::ResultSet *result;
-        sql::Statement *count;
         driver = get_driver_instance();
         connection = driver->connect(HOST, USER, PWD);
         connection->setSchema("SFM");
-        count = connection->createStatement();
-        result = count->executeQuery(count_sql);
-        while (result->next()) {
-            index = result->getInt(1);
-        }
         if (sfm::SQLHandle::getEdgeKey(image1, image2) != -1) {
             return false;
         }
         preparedStatement = connection->prepareStatement(sql);
-        preparedStatement->setInt(1, index);
+        preparedStatement->setInt(1, edge_key);
         preparedStatement->setInt(2, image1);
         preparedStatement->setInt(3, image2);
         preparedStatement->execute();
@@ -193,16 +159,20 @@ bool sfm::SQLHandle::addEdge(int image1, int image2) {
     return false;
 }
 
-bool sfm::SQLHandle::addPointMatch(std::vector<int> &match1_, std::vector<int> &match2_, int image1, int image2) {
+bool
+sfm::SQLHandle::addPointMatch(std::vector<int> &match_index1,
+                              std::vector<int> &match_index2,
+                              int image1, int image2,
+                              int edge_key) {
 
-    if (match1_.size() != match2_.size()) {
+    if (match_index1.size() != match_index2.size()) {
         std::cerr << "The size is not equal" << std::endl;
         return false;
     }
-    const unsigned size = match1_.size();
+    const unsigned size = match_index1.size();
     int index = -1;
     std::string count = "select count(*) from point_match;";
-    std::string insert_sql = "insert into point_match values (?, ?, ?);";
+    std::string insert_sql = "insert into point_match values (?, ?, ?, ?);";
     try {
         sql::Driver *driver = get_driver_instance();
         sql::Connection *connection;
@@ -221,23 +191,26 @@ bool sfm::SQLHandle::addPointMatch(std::vector<int> &match1_, std::vector<int> &
         delete num;
 
         for (int i = 0; i < size; ++i) {
-            int key1 = sfm::SQLHandle::getPoint2dKey(image1, match1_[i]);
-            int key2 = sfm::SQLHandle::getPoint2dKey(image2, match2_[i]);
+//            int key1 = sfm::Point2d::ComputePointKey(image1, match_index1[i]);
+//            int key2 = sfm::Point2d::ComputePointKey(image2, match_index2[i]);
+            int key1 = sfm::SQLHandle::getPoint2dKey(image1, match_index1[i]);
+            int key2 = sfm::SQLHandle::getPoint2dKey(image2, match_index2[i]);
             if (key1 == key2) {
-                std::cerr << "error occurred the key of the two points are equal";
+                std::cerr << "error occurred the key of the two points are equal" << std::endl;
                 continue;
             }
             insert->setInt(1, index++);
             insert->setInt(2, key1);
             insert->setInt(3, key2);
+            insert->setInt(4, edge_key);
             insert->execute();
             insert->clearParameters();
 
-            insert->setInt(1, index++);
-            insert->setInt(2, key2);
-            insert->setInt(3, key1);
-            insert->execute();
-            insert->clearParameters();
+//            insert->setInt(1, index++);
+//            insert->setInt(2, key2);
+//            insert->setInt(3, key1);
+//            insert->execute();
+//            insert->clearParameters();
         }
         insert->close();
         connection->close();
@@ -387,5 +360,9 @@ bool sfm::SQLHandle::getEdges(std::vector<Eigen::Vector2i> &edges) {
     }
     return false;
 }
+
+//bool sfm::SQLHandle::getMatchPoint(std::vector<sfm::Point> &temp_point) {
+//    return false;
+//}
 
 

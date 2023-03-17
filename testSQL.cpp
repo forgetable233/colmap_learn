@@ -32,5 +32,5 @@ int main() {
         match1.push_back(i);
         match2.push_back(i + 1);
     }
-    sfm::SQLHandle::addPointMatch(match1, match2, 1, 1);
+//    sfm::SQLHandle::addPointMatch(match1, match2, 1, 1, 0);
 }

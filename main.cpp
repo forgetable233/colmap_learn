@@ -119,7 +119,7 @@ int main() {
     std::string file_path_linux = "../newimage/";
     std::vector<std::shared_ptr<sfm::CameraModel>> cameras;
 
-    sfm::ImgLoader loader{file_path_linux, cameras, true};
+    sfm::ImgLoader loader{file_path_linux, cameras, false};
 
     sfm::CorrespondenceGraph correspondence_graph(cameras, false);
     std::cout << "Have Finished the correspondence graph build" << std::endl;
