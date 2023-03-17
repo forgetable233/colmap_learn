@@ -24,6 +24,11 @@
 
 namespace sfm {
 
+    struct Point {
+        Eigen::Vector2d point{};
+        Eigen::Vector3i color{};
+    };
+
     class Edge {
     private:
         bool InitialParameters(const bool copy);
@@ -61,7 +66,10 @@ namespace sfm {
 
         Edge(std::vector<CameraModel>::iterator _camera1, std::vector<CameraModel>::iterator _camera2);
 
-        Edge(const std::shared_ptr<CameraModel> &_camera1, const std::shared_ptr<CameraModel> &_camera2);
+        Edge(const std::shared_ptr<CameraModel> &_camera1, const std::shared_ptr<CameraModel> &_camera2,
+             bool use_sql);
+
+        Edge(int key1, int key2);
 
         ~Edge() = default;
 
@@ -72,7 +80,7 @@ namespace sfm {
         void GetPoints(std::vector<sfm::CameraModel>::iterator camera1,
                        std::vector<sfm::CameraModel>::iterator camera2);
 
-        void GetPoints();
+        void GetPoints(bool use_sql);
 
         void CleanOutliers();
 

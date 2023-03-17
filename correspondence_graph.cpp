@@ -8,7 +8,21 @@
 #include <ctime>
 
 namespace sfm {
-    CorrespondenceGraph::CorrespondenceGraph(std::vector<std::shared_ptr<CameraModel>> &cameras) {
+    CorrespondenceGraph::CorrespondenceGraph(std::vector<std::shared_ptr<CameraModel>> &cameras, bool use_sql) {
+        if (use_sql) {
+            std::vector<Eigen::Vector2i> edges;
+            sfm::SQLHandle::getEdges(edges);
+            for (auto &edge: edges) {
+                int edge_key = ComputeEdgeKey(edge.x(), edge.y());
+                scene_graph_.insert(std::pair<int, int>(edge_key / 100, edge_key % 100));
+                edges_.insert(
+                        std::pair<int, std::shared_ptr<Edge>>(edge_key, std::make_shared<Edge>(cameras[edge.x()],
+                                                                                               cameras[edge.y()],
+                                                                                               true)));
+                edges_.at(edge_key)->key_ = edge_key;
+                std::cout << "Have built " << edges_.size() << " edges" << std::endl;
+            }
+        }
         clock_t begin;
         clock_t end;
         double duration;
@@ -22,7 +36,7 @@ namespace sfm {
                 sfm::SQLHandle::addEdge(cameras[i]->key_, cameras[j]->key_);
                 scene_graph_.insert(std::pair<int, int>(edge_key / 100, edge_key % 100));
                 edges_.insert(std::pair<int, std::shared_ptr<Edge>>
-                                      (edge_key, std::make_shared<Edge>(cameras[i], cameras[j])));
+                                      (edge_key, std::make_shared<Edge>(cameras[i], cameras[j], false)));
                 edges_.at(edge_key)->key_ = edge_key;
                 std::cout << "Have built " << edges_.size() << " edges" << std::endl;
             }

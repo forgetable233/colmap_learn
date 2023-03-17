@@ -37,9 +37,11 @@ namespace sfm {
 
         CameraModel(cv::Mat &_image, int _key);
 
+        CameraModel(int key);
+
         CameraModel(std::vector<CameraModel>::iterator iterator);
 
-        void SetCameraPose(const cv::Mat &_R, const cv::Mat &_t);
+        void SetCameraPose(const cv::Mat &R, const cv::Mat &_t);
 
         void RefreshCameraParam(double *new_para);
 

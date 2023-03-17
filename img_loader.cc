@@ -6,7 +6,18 @@
 #include "camera_model.h"
 
 namespace sfm {
-    ImgLoader::ImgLoader(const std::string &file_path, std::vector<std::shared_ptr<CameraModel>> &_cameras) {
+    ImgLoader::ImgLoader(const std::string &file_path,
+                         std::vector<std::shared_ptr<CameraModel>> &_cameras,
+                         bool use_sql) {
+        std::vector<int> image_keys;
+        if (use_sql) {
+            sfm::SQLHandle::getAllImageKey(image_keys);
+            for (int i = 0; i < image_keys.size(); ++i) {
+                _cameras.emplace_back(std::make_shared<sfm::CameraModel>(image_keys[i]));
+                std::cout << "Have successfully read " << this->image_num_ << " images" << std::endl;
+
+            }
+        }
         int number{};
 
         std::string image_path(file_path, 0, file_path.size() - 1);

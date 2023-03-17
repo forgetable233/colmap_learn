@@ -19,7 +19,8 @@ sfm::SQLHandle::addPoint2d(std::vector<int> &image_index,
                            std::vector<double> &y,
                            std::vector<int> &r,
                            std::vector<int> &g,
-                           std::vector<int> &b) {
+                           std::vector<int> &b,
+                           int edge_key) {
 
     std::string sql =
             "insert into point2d (image_index, match_index, x, y, r, g, b, point_key) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
@@ -29,6 +30,11 @@ sfm::SQLHandle::addPoint2d(std::vector<int> &image_index,
             "select count(*) from image_match;";
     std::string add_image_match =
             "insert into image_match (image_match_key, image_index, point_key) VALUES (?, ?, ?);";
+    std::string point_match_count =
+            "insert into point_match (point_match_key, point_key1, point_key2, edge_key) values (?, ?, ?, ?);";
+    std::string get_edge_key = "select edge_key from edge where image_key1 = ? and image_key2 = ?;";
+    int image1 = edge_key / 100;
+    int image2 = edge_key % 100;
     try {
         sql::Driver *driver;
         sql::Connection *connection;
@@ -36,7 +42,9 @@ sfm::SQLHandle::addPoint2d(std::vector<int> &image_index,
         sql::ResultSet *result;
         int index;
         int image_match_index;
+        int point_match_index;
         int size = image_index.size();
+        int final_edge_key;
         driver = get_driver_instance();
         connection = driver->connect(HOST, USER, PWD);
         connection->setSchema("SFM");
@@ -50,10 +58,25 @@ sfm::SQLHandle::addPoint2d(std::vector<int> &image_index,
         while (result->next()) {
             image_match_index = result->getInt(1);
         }
+        result = count->executeQuery(point_match_count);
+        while (result->next()) {
+            point_match_index = result->getInt(1);
+        }
         count->close();
         delete count;
         sql::PreparedStatement *preparedStatement = connection->prepareStatement(sql);
         sql::PreparedStatement *match_prepareStatement = connection->prepareStatement(add_image_match);
+        sql::PreparedStatement *tar_edge_key = connection->prepareStatement(get_edge_key);
+        tar_edge_key->setInt(1, image1);
+        tar_edge_key->setInt(2, image2);
+        result = tar_edge_key->executeQuery();
+        while (result->next()) {
+            final_edge_key = result->getInt(1);
+        }
+
+        tar_edge_key->close();
+        delete tar_edge_key;
+
         for (int i = 0; i < size; ++i) {
             if (sfm::SQLHandle::getPoint2dKey(image_index[i], match_index[i]) != -1) {
                 continue;
@@ -81,7 +104,6 @@ sfm::SQLHandle::addPoint2d(std::vector<int> &image_index,
         connection->close();
         delete preparedStatement;
         delete match_prepareStatement;
-//        delete count;
         return true;
     } catch (sql::SQLException &e) {
         std::cerr << "链接异常" << ' ' << e.what() << std::endl;
@@ -303,3 +325,67 @@ int sfm::SQLHandle::getEdgeKey(int image1, int image2) {
     }
     return -1;
 }
+
+bool sfm::SQLHandle::getAllImageKey(std::vector<int> &image_key) {
+    std::string sql = "select image_index from image;";
+    try {
+        sql::Driver *driver;
+        sql::Connection *connection;
+        sql::ResultSet *resultSet;
+        sql::Statement *statement;
+        driver = get_driver_instance();
+        connection = driver->connect(HOST, USER, PWD);
+        connection->setSchema("SFM");
+
+        statement = connection->createStatement();
+        resultSet = statement->executeQuery(sql);
+        while (resultSet->next()) {
+            image_key.push_back(resultSet->getInt(1));
+        }
+        statement->close();
+        connection->close();
+        delete statement;
+        delete connection;
+        return true;
+    } catch (sql::SQLException &e) {
+        std::cerr << "*******" << ' ' << e.what() << std::endl;
+        return false;
+    } catch (std::runtime_error &e) {
+        std::cerr << "runtime error: " << e.what() << std::endl;
+        return false;
+    }
+    return false;
+}
+
+bool sfm::SQLHandle::getEdges(std::vector<Eigen::Vector2i> &edges) {
+    std::string sql = "select image_key1, image_key2 from edge;";
+    try {
+        sql::Driver *driver;
+        sql::Connection *connection;
+        sql::ResultSet *resultSet;
+        sql::Statement *statement;
+        driver = get_driver_instance();
+        connection = driver->connect(HOST, USER, PWD);
+        connection->setSchema("SFM");
+
+        statement = connection->createStatement();
+        resultSet = statement->executeQuery(sql);
+        while (resultSet->next()) {
+            edges.emplace_back(resultSet->getInt(1), resultSet->getInt(2));
+        }
+        statement->close();
+        connection->close();
+        delete statement;
+        delete connection;
+        return true;
+    } catch (sql::SQLException &e) {
+        std::cerr << "*******" << ' ' << e.what() << std::endl;
+        return false;
+    } catch (std::runtime_error &e) {
+        std::cerr << "runtime error: " << e.what() << std::endl;
+        return false;
+    }
+    return false;
+}
+
+

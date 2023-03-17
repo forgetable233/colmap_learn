@@ -20,7 +20,11 @@
 #include <cppconn/statement.h>
 #include <prepared_statement.h>
 #include <unistd.h>
+#include <Eigen/Core>
+#include <Eigen/Dense>
 
+
+#include "edge.h"
 
 #define USER "dcr"
 #define PWD "d21700499"
@@ -47,7 +51,8 @@ namespace sfm {
 
         static bool
         addPoint2d(std::vector<int> &image_index, std::vector<int> &match_index, std::vector<double> &x,
-                   std::vector<double> &y, std::vector<int> &r, std::vector<int> &g, std::vector<int> &b);
+                   std::vector<double> &y,
+                   std::vector<int> &r, std::vector<int> &g, std::vector<int> &b, int edge_key);
 
         static int getPoint2dKey(int image_index, int match_index);
 
@@ -58,6 +63,12 @@ namespace sfm {
         static bool addEdge(int image1, int image2);
 
         static bool addImage(int image_index);
+
+        static bool getAllImageKey(std::vector<int> &image_key);
+
+        static bool getEdges(std::vector<Eigen::Vector2i> &edges);
+
+        static bool getMatchPoint(std::vector<sfm::Point> &temp_point);
     };
 }
 

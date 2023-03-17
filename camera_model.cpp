@@ -21,6 +21,17 @@ namespace sfm {
                   this->key_points_.begin());
     }
 
+    /** 在使用sql时，CameraModel 只有key和K，T还有用，只用初始化这些，其他信息可从后面得到**/
+    CameraModel::CameraModel(int key) {
+        cv::Mat temp =
+                (cv::Mat_<float>(3, 3) << 1404, 0.0f, 1404,
+                        0.0f, 1404,  936,
+                        0.0f, 0.0f, 1.0f);
+        temp.copyTo(this->K_);
+        this->K_.convertTo(this->K_, 6);
+        this->key_ = key;
+    }
+
     void CameraModel::SetCameraPose(const cv::Mat &R, const cv::Mat &_t) {
         if (R.rows != 3 || R.cols != 3 || _t.cols != 1 || _t.rows != 3) {
             std::cerr << "The input mat can not satisfy the requirement" << std::endl;
@@ -70,6 +81,7 @@ namespace sfm {
                         0.0f, _image.cols / 2, _image.rows / 2,
                         0.0f, 0.0f, 1.0f);
         temp.copyTo(this->K_);
+//        std::cout << temp << std::endl;
         this->K_.convertTo(this->K_, 6);
         return true;
     }

@@ -32,7 +32,8 @@ namespace sfm {
 
         std::vector<CameraModel> image_features_;
 
-        explicit ImgLoader(const std::string &file_path, std::vector<std::shared_ptr<CameraModel>> &_cameras);
+        ImgLoader(const std::string &file_path, std::vector<std::shared_ptr<CameraModel>> &_cameras,
+                  bool use_sql);
 
         ~ImgLoader() = default;
 

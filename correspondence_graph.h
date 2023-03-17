@@ -60,7 +60,7 @@ namespace sfm {
 
         explicit CorrespondenceGraph(CorrespondenceGraph *_graph);
 
-        explicit CorrespondenceGraph(std::vector<std::shared_ptr<CameraModel>> &cameras);
+        CorrespondenceGraph(std::vector<std::shared_ptr<CameraModel>> &cameras, bool use_sql);
 
         ~CorrespondenceGraph() = default;
 

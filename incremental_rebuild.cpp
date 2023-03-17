@@ -409,7 +409,7 @@ namespace sfm {
         std::unordered_map<int, std::vector<std::shared_ptr<Point2d>>> points;
         scene_graph_->GetCameraPoints(points);
 //        std::shared_ptr<ceres::Problem[]> problems(new ceres::Problem[16]);
-        std::shared_ptr<ceres::Solver::Summary[]> summaries(new ceres::Solver::Summary[16]);
+//        std::shared_ptr<ceres::Solver::Summary[]> summaries(new ceres::Solver::Summary[16]);
         // 在BA处使用RANSAC进行优化，计算对应的点的数量以及效果
         for (int i = 0; i < IMAGE_NUMBER; ++i) {
             ceres::Problem problem;

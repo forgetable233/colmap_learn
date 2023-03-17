@@ -1,7 +1,7 @@
 #include <iostream>
 #include <algorithm>
 #include <string>
-#include <time.h>
+#include <ctime>
 
 #include "img_loader.h"
 #include "camera_model.h"
@@ -52,7 +52,7 @@ void BuildSceneGraph(std::vector<std::shared_ptr<sfm::Edge>> &edges,
 
     for (int i = 0; i < IMAGE_NUMBER; ++i) {
         for (int j = i + 1; j < IMAGE_NUMBER; ++j) {
-            sfm::Edge temp_edge{cameras[i], cameras[j]};
+            sfm::Edge temp_edge{cameras[i], cameras[j], false};
             if (temp_edge.PassGeometryTest()) {
                 edges.push_back(std::make_shared<sfm::Edge>(temp_edge));
                 scene_graph[cameras[i]->key_][cameras[j]->key_] = edges.size() - 1;
@@ -119,9 +119,9 @@ int main() {
     std::string file_path_linux = "../newimage/";
     std::vector<std::shared_ptr<sfm::CameraModel>> cameras;
 
-    sfm::ImgLoader loader{file_path_linux, cameras};
+    sfm::ImgLoader loader{file_path_linux, cameras, true};
 
-    sfm::CorrespondenceGraph correspondence_graph(cameras);
+    sfm::CorrespondenceGraph correspondence_graph(cameras, false);
     std::cout << "Have Finished the correspondence graph build" << std::endl;
     sfm::IncrementalRebuild rebuild(&correspondence_graph);
     rebuild.BeginRebuild();
