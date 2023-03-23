@@ -24,11 +24,6 @@
 
 namespace sfm {
 
-    struct Point {
-        Eigen::Vector2d point{};
-        Eigen::Vector3i color{};
-    };
-
     class Edge {
     private:
         bool InitialParameters(const bool copy);

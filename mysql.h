@@ -22,9 +22,13 @@
 #include <unistd.h>
 #include <Eigen/Core>
 #include <Eigen/Dense>
+#include <opencv2/opencv.hpp>
+#include <opencv2/core.hpp>
 
 
-#include "edge.h"
+#include "camera_model.h"
+//#include "edge.h"
+#include "point2d.h"
 
 #define USER "dcr"
 #define PWD "d21700499"
@@ -36,6 +40,17 @@
 /** 还得实现连接池
  * 目前的查询速度很慢**/
 namespace sfm {
+    struct Point {
+        Point(double x, double y, int r, int g, int b) {
+            point(0, 0) = x;
+            point(1, 0) = y;
+            color(0, 0) = r;
+            color(1, 0) = g;
+            color(2, 0) = b;
+        }
+        Eigen::Vector2d point{};
+        Eigen::Vector3i color{};
+    };
     class SQLHandle {
     private:
         static std::string user;
@@ -66,13 +81,42 @@ namespace sfm {
 
         static bool addEdge(int image1, int image2, int edge_key);
 
-        static bool addImage(int image_index);
+        static bool addImage(int image_index, int row_size, int col_size);
 
-        static bool getAllImageKey(std::vector<int> &image_key);
+        static bool addKeyPoint(int image_num,
+                                std::vector<float> &x,
+                                std::vector<float> &y,
+                                std::vector<float> &size,
+                                std::vector<float> &angle,
+                                std::vector<int> &response,
+                                std::vector<int> &octave,
+                                std::vector<int> &class_id,
+                                std::vector<int> &r,
+                                std::vector<int> &g,
+                                std::vector<int> &b);
+
+        static bool
+        getAllKeyPoints(int &image_num,
+                        std::vector<float> &x,
+                        std::vector<float> &y,
+                        std::vector<float> &size,
+                        std::vector<float> &angle,
+                        std::vector<int> &response,
+                        std::vector<int> &octave,
+                        std::vector<int> &class_id,
+                        std::vector<int> &r,
+                        std::vector<int> &g,
+                        std::vector<int> &b);
+
+        static bool getAllImage(std::vector<int> &image_key, std::vector<int> &row_size, std::vector<int> &col_size);
 
         static bool getEdges(std::vector<Eigen::Vector2i> &edges);
 
-//        static bool getMatchPoint(std::vector<Point> &temp_point);
+        static bool getMatchPoint(std::vector<cv::Point2i> &temp_point1,
+                                  std::vector<cv::Point2i> &temp_point2,
+                                  std::vector<Eigen::Vector3d> &color1,
+                                  std::vector<Eigen::Vector3d> &color2,
+                                  int edge_key);
     };
 }
 

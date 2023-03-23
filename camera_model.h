@@ -15,6 +15,7 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/eigen.hpp>
 
+
 namespace sfm {
     class CameraModel {
     private:
@@ -37,7 +38,7 @@ namespace sfm {
 
         CameraModel(cv::Mat &_image, int _key);
 
-        CameraModel(int key);
+        CameraModel(int key, int row_size, int col_size, cv::Mat &_image);
 
         CameraModel(std::vector<CameraModel>::iterator iterator);
 

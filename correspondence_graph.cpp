@@ -10,6 +10,7 @@
 namespace sfm {
     CorrespondenceGraph::CorrespondenceGraph(std::vector<std::shared_ptr<CameraModel>> &cameras, bool use_sql) {
         if (use_sql) {
+            std::cout << "using sql" << std::endl;
             std::vector<Eigen::Vector2i> edges;
             sfm::SQLHandle::getEdges(edges);
             for (auto &edge: edges) {
@@ -21,8 +22,11 @@ namespace sfm {
                                                                                                true)));
                 edges_.at(edge_key)->key_ = edge_key;
                 std::cout << "Have built " << edges_.size() << " edges" << std::endl;
+                BuildPoints(false);
             }
+            return;
         }
+        std::cout << "not using sql" << std::endl;
         clock_t begin;
         clock_t end;
         double duration;
@@ -33,7 +37,7 @@ namespace sfm {
                     continue;
                 }
                 int edge_key = ComputeEdgeKey(cameras[i]->key_, cameras[j]->key_);
-                sfm::SQLHandle::addEdge(cameras[i]->key_, cameras[j]->key_, edge_key);
+//                sfm::SQLHandle::addEdge(cameras[i]->key_, cameras[j]->key_, edge_key);
                 scene_graph_.insert(std::pair<int, int>(edge_key / 100, edge_key % 100));
                 edges_.insert(std::pair<int, std::shared_ptr<Edge>>
                                       (edge_key, std::make_shared<Edge>(cameras[i], cameras[j], false)));
@@ -45,7 +49,7 @@ namespace sfm {
         std::cout << "Have found " << edges_.size() << " edges" << std::endl;
         duration = (end - begin) / CLOCKS_PER_SEC;
         std::cout << "The time costed to build edges is " << duration << "secs" << std::endl;
-        BuildPoints();
+        BuildPoints(false);
     }
 
     CorrespondenceGraph::CorrespondenceGraph(CorrespondenceGraph *_graph) {
@@ -87,7 +91,11 @@ namespace sfm {
 
     // 保存内容有三层，分别是key（图片与位置），图片中的索引，对应的点的坐标
     // 此处已经完成构建相关性
-    void CorrespondenceGraph::BuildPoints() {
+    void CorrespondenceGraph::BuildPoints(bool use_sql) {
+        if (use_sql) {
+
+            return;
+        }
         for (const auto &edge: edges_) {
             // 构建对应的camera模型
             int camera1 = edge.second->camera1_->key_;
@@ -105,6 +113,7 @@ namespace sfm {
             // 目前不需要迭代搜索，因为查找方式本质上还是穷举查找，在之后数据集增加后可能需要改变，同时存在外点的干扰
             // TODO 这里有对外点的过滤问题
             int i = 0;
+            const long size = edge.second->matches_.size();
             for (const auto &match: edge.second->matches_) {
                 if (edge.second->is_F_inliers_[i++]) {
                     int point_key1 = ComputePointKey(camera1, match.queryIdx);

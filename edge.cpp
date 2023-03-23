@@ -131,8 +131,12 @@ namespace sfm {
 
     void Edge::GetPoints(bool use_sql) {
         if (use_sql) {
-            std::vector<Point> temp_point;
-
+            sfm::SQLHandle::getMatchPoint(this->key_points_1_,
+                                          this->key_points_2_,
+                                          this->colors1_,
+                                          this->colors2_,
+                                          this->key_);
+            return;
         }
         std::vector<int> queryIdx;
         std::vector<int> trainIdx;
@@ -169,10 +173,9 @@ namespace sfm {
             key1.emplace_back(camera1_->key_);
             key2.emplace_back(camera2_->key_);
         }
-        sfm::SQLHandle::addPoint2d(key1, queryIdx, x1, y1, r1, g1, b1);
-        sfm::SQLHandle::addPoint2d(key2, trainIdx, x2, y2, r2, g2, b2);
-        sfm::SQLHandle::addPointMatch(queryIdx, trainIdx, camera1_->key_, camera2_->key_, this->key_);
-//        sfm::SQLHandle::addPointMatch(queryIdx, trainIdx, camera1_->key_, camera2_->key_);
+//        sfm::SQLHandle::addPoint2d(key1, queryIdx, x1, y1, r1, g1, b1);
+//        sfm::SQLHandle::addPoint2d(key2, trainIdx, x2, y2, r2, g2, b2);
+//        sfm::SQLHandle::addPointMatch(queryIdx, trainIdx, camera1_->key_, camera2_->key_, this->key_);
     }
 
     /**
@@ -283,14 +286,15 @@ namespace sfm {
      */
     void Edge::CleanOutliers() {
         is_F_inliers_.resize(this->matches_.size());
-        for (int i = 0; i < matches_.size(); ++i) {
+        const long size = this->key_points_1_.size();
+        for (int i = 0; i < size; ++i) {
             cv::Mat temp_point1 = (cv::Mat_<float>(3, 1) <<
-                    camera1_->key_points_[matches_[i].queryIdx].pt.x,
-                    camera1_->key_points_[matches_[i].queryIdx].pt.y,
+                                                         this->key_points_1_[i].x,
+                    this->key_points_1_[i].y,
                     1.0f);
             cv::Mat temp_point2 = (cv::Mat_<float>(3, 1) <<
-                    camera2_->key_points_[matches_[i].trainIdx].pt.x,
-                    camera2_->key_points_[matches_[i].trainIdx].pt.y,
+                                                         this->key_points_2_[i].x,
+                    this->key_points_2_[i].y,
                     1.0f);
 
             temp_point1.convertTo(temp_point1, f_m_.type());

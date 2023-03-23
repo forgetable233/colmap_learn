@@ -39,7 +39,7 @@ add_executable(testJava testSQL.cpp mysql.cpp mysql.h)
 #target_include_directories(testJava PRIVATE ${MYSQL_ROOT_DIR}/include)
 #target_link_directories(testJava PRIVATE ${MYSQL_ROOT_DIR}/lib)
 target_link_libraries(testJava mysqlclient)
-target_link_libraries(testJava mysqlcppconn)
+target_link_libraries(testJava mysqlcppconn Eigen3::Eigen ${PCL_LIBRARIES})
 
 target_link_libraries(test
         PRIVATE Eigen3::Eigen
