@@ -227,7 +227,4 @@ CTestTestfile.cmake
 .$E-R.bkp
 .$E-R.dtmp
 
-images/
-
-
-!/images/
+!/image/
