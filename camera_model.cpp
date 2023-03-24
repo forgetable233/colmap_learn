@@ -62,6 +62,7 @@ namespace sfm {
                                                   edgeThreshold,
                                                   sigma);
         sift->compute(_image, this->key_points_, this->descriptors_);
+//        std::cout << this->descriptors_ << std::endl;
     }
 
     void CameraModel::SetCameraPose(const cv::Mat &R, const cv::Mat &_t) {

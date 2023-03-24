@@ -21,7 +21,7 @@ namespace sfm {
             temp.y = static_cast<float>(point.y());
             temp.z = static_cast<float>(point.z());
             temp.rgb = 0xff0000;
-//            if (temp.z > 0 ) {
+//            if (temp.z > 0) {
                 cloud_->emplace_back(temp);
 //            }
         }
@@ -43,6 +43,7 @@ namespace sfm {
             x += point.x;
             y += point.y;
             z += point.z;
+//            std::cout << "x: " << point.x << " y " << point.y << " z: " << point.z << std::endl;
         }
         x /= static_cast<double>(cloud_->points.size());
         y /= static_cast<double>(cloud_->points.size());

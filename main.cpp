@@ -124,6 +124,6 @@ int main() {
     std::cout << "Have Finished the correspondence graph build" << std::endl;
     sfm::IncrementalRebuild rebuild(&correspondence_graph);
     rebuild.BeginRebuild();
-    cout << "I just want to test my push " << std::endl;
+//    cout << "I just want to test my push " << std::endl;
     return 0;
 }
