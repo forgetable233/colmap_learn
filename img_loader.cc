@@ -47,16 +47,15 @@ namespace sfm {
                 return;
             }
             /** 下采样 提升运行速度**/
-            cv::pyrDown(image,
-                        down_sample_2,
-                        cv::Size{image.cols / 2, image.rows / 2});
-            cv::pyrDown(down_sample_2,
-                        down_sample_4,
-                        cv::Size{down_sample_2.cols / 2, down_sample_2.rows / 2});
-            cv::pyrDown(down_sample_4,
-                        down_sample_8,
-                        cv::Size{down_sample_4.cols / 2, down_sample_4.rows / 2});
-            cv::cvtColor(down_sample_2, grey_image, cv::COLOR_BGR2GRAY);
+//            cv::pyrDown(image,
+//                        down_sample_2,
+//                        cv::Size{image.cols / 2, image.rows / 2});
+//            cv::pyrDown(down_sample_2,
+//                        down_sample_4,
+//                        cv::Size{down_sample_2.cols / 2, down_sample_2.rows / 2});
+//            cv::pyrDown(down_sample_4,
+//                        down_sample_8,
+//                        cv::Size{down_sample_4.cols / 2, down_sample_4.rows / 2});
 
             if (use_sql) {
                 sfm::SQLHandle::getAllImage(image_keys, row_sizes, col_sizes);
@@ -64,8 +63,8 @@ namespace sfm {
 //                std::cout << "Have successfully read " << this->image_num_ << " images" << std::endl;
                 i++;
             } else {
-                _cameras.emplace_back(std::make_shared<CameraModel>(grey_image, number));
-                sfm::SQLHandle::addImage(number, grey_image.rows, grey_image.cols);
+                _cameras.emplace_back(std::make_shared<CameraModel>(image, number));
+                sfm::SQLHandle::addImage(number, image.rows, image.cols);
             }
             number++;
             temp_path.erase(temp_path.length() - strlen(ptr->d_name), strlen(ptr->d_name));

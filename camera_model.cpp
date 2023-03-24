@@ -62,7 +62,7 @@ namespace sfm {
                                                   edgeThreshold,
                                                   sigma);
         sift->compute(_image, this->key_points_, this->descriptors_);
-//        std::cout << this->descriptors_ << std::endl;
+        std::cout << this->descriptors_ << std::endl;
     }
 
     void CameraModel::SetCameraPose(const cv::Mat &R, const cv::Mat &_t) {
@@ -81,6 +81,8 @@ namespace sfm {
             std::cerr << "The input image is empty" << std::endl;
             return false;
         }
+        cv::Mat grey_image;
+        cv::cvtColor(_image, grey_image, cv::COLOR_BGR2GRAY);
         this->key_ = _key;
 
         int nfeatures{0};
@@ -106,8 +108,8 @@ namespace sfm {
         std::vector<int> g;
         std::vector<int> b;
 
-        sift->detect(_image, this->key_points_);
-        sift->compute(_image, this->key_points_, this->descriptors_);
+        sift->detect(grey_image, this->key_points_);
+        sift->compute(grey_image, this->key_points_, this->descriptors_);
         if (this->key_points_.empty()) {
             std::cout << "this image can not find enough key points_" << std::endl;
             std::cout << this->key_ << std::endl;
@@ -125,9 +127,9 @@ namespace sfm {
             response.emplace_back(point.response);
             octave.emplace_back(point.octave);
             class_id.emplace_back(point.class_id);
-            r.emplace_back(_image.at<cv::Vec3b>(_x, _y)[2]);
-            g.emplace_back(_image.at<cv::Vec3b>(_x, _y)[1]);
-            b.emplace_back(_image.at<cv::Vec3b>(_x, _y)[0]);
+            r.emplace_back(_image.at<cv::Vec3b>(_y, _x)[2]);
+            g.emplace_back(_image.at<cv::Vec3b>(_y, _x)[1]);
+            b.emplace_back(_image.at<cv::Vec3b>(_y, _x)[0]);
         }
         cv::Mat temp =
                 (cv::Mat_<float>(3, 3) << _image.cols / 2, 0.0f, _image.cols / 2,
